@@ -1,15 +1,11 @@
 {
-  "version": 2,
-  "builds": [
+  "framework": null,
+  "outputDirectory": "visualizer",
+  "cleanUrls": true,
+  "rewrites": [
     {
-      "src": "visualizer/index.html",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/visualizer/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }
