@@ -712,11 +712,12 @@
                     <div class="probe-explanation">
                         <div class="explanation-title">📋 检测原理</div>
                         <div class="explanation-text">
-                            不同模型的<strong>分词器 (Tokenizer)</strong>对相同文本的 token 计数不同。例如 GPT 系列对中文编码效率低，而国产模型对中文更友好。
+                            <strong>1. Tokenizer计费：</strong>各模型对相同文本的 token 计数不同。<br>
+                            <strong>2. 控制符注入 (新增核武级探针)：</strong>向模型注入 `<|im_start|>` 等底层指令，若发生 400 崩溃或模板泄漏，则100%是未加防护的开源模型套壳。
                         </div>
                     </div>
                     <div class="probe-content">
-                        <strong>🎯 检测目的：</strong>通过 token 消耗模式判断底层模型的真实身份，识别"挂羊头卖狗肉"的套壳行为。
+                        <strong>🎯 检测目的：</strong>通过 token 消耗及对控制符的致命反应，精准识别“挂羊头卖狗肉”的套壳行为。
                     </div>
                     <div class="probe-detail" id="detail1">
                         <div>⏳ Prompt Tokens: <span id="tokenizerPrompt">--</span></div>
@@ -786,12 +787,12 @@
                         <div class="explanation-title">📋 检测原理</div>
                         <div class="explanation-text">
                             <strong>浮点数陷阱：</strong>9.11 vs 9.9，测试 tokenizer 对数字的理解<br>
-                            <strong>弱智吧：</strong>测试常识推理能力<br>
-                            <strong>幻觉回旋：</strong>测试是否会对不存在的事实编造答案
+                            <strong>幻觉回旋：</strong>测试对不存在事实的编造<br>
+                            <strong>知识截断 (新增探针)：</strong>询问2024年中冷门事件 (如 iPad Pro M4 厚度)，精准探测其知识库年龄。
                         </div>
                     </div>
                     <div class="probe-content">
-                        <strong>🎯 检测目的：</strong>评估模型的智能水平，低配模型往往在逻辑题上暴露马脚。这是区分 S/A/B/C 级模型的关键指标。
+                        <strong>🎯 检测目的：</strong>综合评估智能水平与知识年龄，低配或老旧模型极易在逻辑题和冷门时效题上暴露马脚。
                     </div>
                     <div class="probe-detail" id="detail4">
                         <div>⏳ 逻辑智商测试: 等待检测...</div>
@@ -1249,8 +1250,8 @@
                 // 探针卡片
                 probe1Name: '1. 物理指纹层',
                 probe1Sub: 'Physical Fingerprint',
-                probe1Principle: '不同模型的分词器 (Tokenizer) 对相同文本的 token 计数不同。例如 GPT 系列对中文编码效率低，而国产模型对中文更友好。',
-                probe1Purpose: '通过 token 消耗模式判断底层模型的真实身份，识别"挂羊头卖狗肉"的套壳行为。',
+                probe1Principle: '<strong>1. Tokenizer计费：</strong>各模型对相同文本的 token 计数不同。<br><strong>2. 控制符注入 (新增核武级探针)：</strong>向模型注入 <|im_start|> 等底层指令，若发生 400 崩溃或模板泄漏，则100%是未加防护的开源模型套壳。',
+                probe1Purpose: '通过 token 消耗及对控制符的致命反应，精准识别“挂羊头卖狗肉”的套壳行为。',
                 probe2Name: '2. 潜意识溯源',
                 probe2Sub: 'Subconscious Tracing',
                 probe2Principle: '模型在翻译过程中会"泄露"其训练时植入的身份信息。当原文包含 "Anthropic" 等关键词时，非 Claude 模型可能会错误保留该信息，暴露真实身份。',
@@ -1261,8 +1262,8 @@
                 probe3Purpose: '评估模型的安全边界，同时侧面验证模型身份。拒绝风格是重要的指纹特征。',
                 probe4Name: '4. 逻辑与智商',
                 probe4Sub: 'Logic & Reasoning',
-                probe4Principle: '浮点数陷阱：9.11 vs 9.9，测试 tokenizer 对数字的理解；弱智吧：测试常识推理能力；幻觉回旋：测试是否会对不存在的事实编造答案。',
-                probe4Purpose: '评估模型的智能水平，低配模型往往在逻辑题上暴露马脚。这是区分 S/A/B/C 级模型的关键指标。',
+                probe4Principle: '<strong>浮点数陷阱：</strong>9.11 vs 9.9，测试 tokenizer 对数字的理解<br><strong>幻觉回旋：</strong>测试对不存在事实的编造<br><strong>知识截断 (新增探针)：</strong>询问2024年中冷门事件，精准探测其知识库年龄。',
+                probe4Purpose: '综合评估智能水平与知识年龄，低配或老旧模型极易在逻辑题和冷门时效题上暴露马脚。',
                 probe5Name: '5. Agent 兼容性',
                 probe5Sub: 'Agent Compatibility',
                 probe5Principle: '要求模型输出纯净 JSON，不使用 markdown 包装。这测试了模型的指令遵从能力和格式控制能力。',
@@ -1322,8 +1323,8 @@
                 // Probe cards
                 probe1Name: '1. Physical Fingerprint',
                 probe1Sub: 'Tokenizer Analysis',
-                probe1Principle: 'Different models have different token counts for the same text. GPT series are less efficient with Chinese, while domestic models are more optimized.',
-                probe1Purpose: 'Identify the real model through token consumption patterns. Detect "bait and switch" behaviors.',
+                probe1Principle: '<strong>1. Tokenizer:</strong> Different models have different token counts.<br><strong>2. Special Token Injection (New):</strong> Injecting underlying commands like <|im_start|>. If it crashes (400) or leaks templates, it is 100% a fake open-source model shell.',
+                probe1Purpose: 'Identify the real model through token consumption patterns and fatal reactions to special tokens. Detect "bait and switch" behaviors.',
                 probe2Name: '2. Subconscious Tracing',
                 probe2Sub: 'Language Mirror Test',
                 probe2Principle: 'Models may "leak" their training-embedded identity during translation. Non-Claude models might incorrectly preserve "Anthropic" keywords.',
@@ -1334,8 +1335,8 @@
                 probe3Purpose: 'Evaluate safety boundaries while verifying model identity. Refusal style is an important fingerprint.',
                 probe4Name: '4. Logic & Reasoning',
                 probe4Sub: 'Intelligence Test',
-                probe4Principle: 'Float trap: 9.11 vs 9.9 tests tokenizer number understanding; Logic puzzles test common sense reasoning; Hallucination test checks if model fabricates answers.',
-                probe4Purpose: 'Evaluate model intelligence. Lower-tier models often fail these tests. Key metric for S/A/B/C classification.',
+                probe4Principle: '<strong>Float trap:</strong> 9.11 vs 9.9 tests tokenizer number understanding.<br><strong>Hallucination test:</strong> checks if model fabricates answers.<br><strong>Knowledge Cutoff (New):</strong> Asks obscure mid-2024 events to pinpoint knowledge base age.',
+                probe4Purpose: 'Evaluate model intelligence and knowledge age. Lower-tier or outdated models often fail these tests. Key metric for S/A/B/C classification.',
                 probe5Name: '5. Agent Compatibility',
                 probe5Sub: 'JSON Format Test',
                 probe5Principle: 'Require pure JSON output without markdown wrapping. Tests instruction following and format control abilities.',
