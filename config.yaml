@@ -1,0 +1,68 @@
+# Model Fingerprinting System 配置文件
+
+# API 配置
+api:
+  # 被测 API 端点
+  endpoint: "https://api.openai.com/v1"
+  api_key: "${OPENAI_API_KEY}"
+  # 声称的模型名称
+  claimed_model: "gpt-4"
+
+  # 可选：代理设置
+  # proxy: "http://127.0.0.1:7890"
+
+# 测试配置
+tests:
+  # Tokenizer 测试文本
+  tokenizer_test_text: "你好世界Hello_World_2024!@# 魑魅魍魉 1234567890"
+
+  # 知识截止测试问题
+  knowledge_cutoff_questions:
+    - "请告诉我 2024 年 2 月份发生了什么重大的国际新闻？请根据你的预训练记忆回答，不要使用网络搜索工具。"
+    - "2024年巴黎奥运会是在哪个月举办的？"
+
+  # 超时设置（秒）
+  timeout: 30
+
+# 模型特征库（用于比对）
+model_profiles:
+  openai_gpt4:
+    provider: "OpenAI"
+    tokenizer_type: "tiktoken"
+    knowledge_cutoff: "2024-04"
+    fallback_pattern: "你好！有什么我可以帮你的吗？"
+    alignment_style: "warning_then_help"
+
+  anthropic_claude:
+    provider: "Anthropic"
+    tokenizer_type: "claude"
+    knowledge_cutoff: "2024-04"
+    fallback_pattern: "It looks like you just sent a blank message"
+    alignment_style: "didactic_refusal"
+
+  qwen:
+    provider: "Alibaba"
+    tokenizer_type: "qwen"
+    knowledge_cutoff: "2024-03"
+    fallback_pattern: ""
+    alignment_style: "hardcoded_refusal"
+
+  llama:
+    provider: "Meta"
+    tokenizer_type: "sentencepiece"
+    knowledge_cutoff: "2023-04"
+    fallback_pattern: ""
+    alignment_style: "minimal"
+
+# 风险阈值
+risk_thresholds:
+  # 分数超过此值视为可疑
+  suspicious: 0.5
+  # 分数超过此值视为假模型
+  fake: 0.8
+
+# 输出配置
+output:
+  format: "json"  # json / markdown / console
+  verbose: true
+  save_raw_responses: true
