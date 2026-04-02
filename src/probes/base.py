@@ -97,6 +97,7 @@ class BaseProbe(ABC):
             "stream_chunks": [],
             "has_reasoning_content": False,
             "reasoning_content": None,
+            "headers": {},
         }
 
         url = f"{self.base_url}/chat/completions"
@@ -119,6 +120,7 @@ class BaseProbe(ABC):
                 if stream:
                     # 流式请求
                     async with client.stream("POST", url, headers=headers, json=payload) as response:
+                        metadata["headers"] = dict(response.headers)
                         response.raise_for_status()
                         content = ""
                         chunks = []
@@ -147,6 +149,7 @@ class BaseProbe(ABC):
                 else:
                     # 非流式请求
                     response = await client.post(url, headers=headers, json=payload)
+                    metadata["headers"] = dict(response.headers)
                     response.raise_for_status()
                     data = response.json()
 

@@ -24,10 +24,56 @@ class SubconsciousProbe(BaseProbe):
     }
 
     async def execute(self) -> ProbeResult:
-        """执行潜意识溯源测试"""
-        # 语言倒影测试 (PRD 指定 Prompt)
-        result = await self._test_language_reflection()
-        return result
+        """执行潜意识与文体计量测试"""
+        # 测试1: 语言倒影测试 (PRD 指定 Prompt)
+        reflection_result = await self._test_language_reflection()
+        
+        # 测试2: 文体计量测试 (学术级探测)
+        style_result = await self._test_stylistic_attribution()
+        
+        # 综合分数
+        score = max(reflection_result.score, style_result.get("score", 0.0))
+        passed = score < 0.5
+        
+        reflection_result.score = score
+        reflection_result.passed = passed
+        reflection_result.details["stylistic_attribution"] = style_result
+        
+        return reflection_result
+
+    async def _test_stylistic_attribution(self) -> dict:
+        """
+        文体计量学特征分析 (Stylistic Attribution)
+        原理: 不同模型厂商对特定受限提示词的反应有固定的词汇与句式偏好
+        """
+        prompt = 'Please explain quantum computing in exactly two sentences. Do not use the words "quantum" or "computing".'
+        
+        response, metadata = await self._call_api(
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=150,
+        )
+
+        response_lower = response.lower()
+        
+        style_detail = "风格中立/未识别到典型特征"
+        score = 0.2
+        detected_style = "unknown"
+        
+        if "as an ai" in response_lower or "however," in response_lower:
+            style_detail = "呈现 OpenAI/ChatGPT 典型文体风格 (如 however, as an ai)"
+            detected_style = "openai"
+            score = 0.6
+        elif "here is" in response_lower or "certainly" in response_lower:
+            style_detail = "呈现 Claude 典型服务文体风格 (倾向于加上前言)"
+            detected_style = "anthropic"
+            score = 0.5
+            
+        return {
+            "style_detail": style_detail,
+            "detected_style": detected_style,
+            "raw_response": response,
+            "score": score
+        }
 
     async def _test_language_reflection(self) -> ProbeResult:
         """

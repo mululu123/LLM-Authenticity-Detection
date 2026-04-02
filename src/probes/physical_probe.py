@@ -55,7 +55,7 @@ class PhysicalProbe(BaseProbe):
         )
 
     async def _test_tokenizer(self) -> dict:
-        """Tokenizer 计费测试"""
+        """物理架构与 Tokenizer 计费综合测试"""
         # PRD 指定的测试文本
         test_prompt = "The quick brown fox 诸葛大名垂宇宙 jumps over 1234567890 🚀?!"
 
@@ -65,8 +65,29 @@ class PhysicalProbe(BaseProbe):
         )
 
         prompt_tokens = metadata.get("prompt_tokens", 0)
+        
+        # 1. 提取 HTTP Headers 基础设施指纹
+        headers = metadata.get("headers", {})
+        infra_score = 0.0
+        infra_detail = "原生商业/标准 API"
+        
+        # 将 headers 的 key 转为小写进行匹配
+        lower_headers = {k.lower(): v.lower() for k, v in headers.items()}
+        
+        if "x-ollama-version" in lower_headers:
+            infra_score = 1.0
+            infra_detail = "检测到 Ollama 本地框架 (严重套壳特征)"
+        elif "x-litellm-version" in lower_headers:
+            infra_score = 0.6
+            infra_detail = "检测到 LiteLLM 中转代理"
+        elif "server" in lower_headers and "uvicorn" in lower_headers["server"]:
+            infra_score = 0.8
+            infra_detail = "检测到 Uvicorn (vLLM等开源框架常用)"
+        elif any(k.startswith("llm_provider") for k in lower_headers):
+            infra_score = 0.7
+            infra_detail = "发现上游提供商 Header 泄漏 (代理服务器)"
 
-        # 判断 Token 特征
+        # 2. 判断 Token 特征
         detected_family = "unknown"
         min_diff = float("inf")
 
@@ -88,15 +109,20 @@ class PhysicalProbe(BaseProbe):
         )
 
         if in_range:
-            score = 0.0
+            token_score = 0.0
         else:
             # 偏离越大，越可疑
-            score = min(1.0, min_diff / 10)
+            token_score = min(1.0, min_diff / 10)
+
+        # 综合基础设施和 token 分数
+        score = max(token_score, infra_score)
 
         return {
             "prompt_tokens": prompt_tokens,
             "detected_family": detected_family,
             "in_expected_range": in_range,
+            "infra_score": infra_score,
+            "infra_detail": infra_detail,
             "score": score,
         }
 
