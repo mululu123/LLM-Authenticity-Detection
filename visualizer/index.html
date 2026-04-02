@@ -892,10 +892,16 @@
 
         // API 请求辅助函数
         async function apiRequest(endpoint, apiKey, model, messages, maxTokens = 300) {
-            console.log('请求端点:', endpoint);
+            // 自动补全 /v1/chat/completions，防止用户仅输入根域名
+            let finalEndpoint = endpoint.trim().replace(/\/$/, "");
+            if (!finalEndpoint.endsWith('/chat/completions')) {
+                finalEndpoint += finalEndpoint.endsWith('/v1') ? '/chat/completions' : '/v1/chat/completions';
+            }
+
+            console.log('请求端点:', finalEndpoint);
             console.log('请求模型:', model);
 
-            const response = await fetch(endpoint, {
+            const response = await fetch(finalEndpoint, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ model: model, messages: messages, temperature: 0, max_tokens: maxTokens })
