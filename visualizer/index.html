@@ -924,8 +924,19 @@
             }
 
             try {
-                return JSON.parse(text);
+                const json = JSON.parse(text);
+                // 兼容国内大模型中转站的非标错误返回 (HTTP 200, 但包含 code 和 msg)
+                if (json.code && json.code !== 0 && json.code !== 200 && json.msg) {
+                    throw new Error(`API 业务错误 (${json.code}): ${json.msg}`);
+                }
+                if (json.error && json.error.message) {
+                    throw new Error(`API 错误: ${json.error.message}`);
+                }
+                return json;
             } catch (e) {
+                if (e.message.includes('业务错误') || e.message.includes('API 错误')) {
+                    throw e;
+                }
                 throw new Error('API 响应无法解析为 JSON: ' + text.substring(0, 100));
             }
         }
@@ -1147,7 +1158,8 @@
                 loadingText.textContent = '正在检测: 1/5 物理指纹层...';
                 const r1 = await probes.tokenizer(endpoint, apiKey, model);
                 scores.push(r1.score);
-                document.getElementById('tokenizerPrompt').textContent = r1.promptTokens;
+                const tpEl = document.getElementById('tokenizerPrompt');
+                if (tpEl) tpEl.textContent = r1.promptTokens;
                 document.getElementById('score1').textContent = r1.score + '%';
                 updateProbeStatus('probe1', 'status1', r1.score, 
                     `<div>✓ Prompt Tokens: ${r1.promptTokens}</div>
