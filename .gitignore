@@ -47,3 +47,6 @@ venv.bak/
 # Project specific
 test_report.json
 *.log
+
+# Node
+node_modules/
