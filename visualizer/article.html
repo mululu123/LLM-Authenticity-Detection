@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>评测文章 - AI Club In</title>
+    <meta name="description" content="API中转站深度评测、市场报告、选购指南。用数据和探针说话，帮你全面了解各大中转站的真实表现。">
+    <meta name="keywords" content="API中转站评测,GPT代理评测,Claude代理评测,API市场报告,Token选购指南">
+    <meta property="og:title" content="评测文章 - AI Club In">
+    <meta property="og:description" content="API中转站深度评测、市场报告、选购指南。">
+    <meta property="og:type" content="website">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-bg: rgba(99,102,241,0.08);
+            --success: #10b981;
+            --success-bg: rgba(16,185,129,0.1);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245,158,11,0.1);
+            --danger: #ef4444;
+            --danger-bg: rgba(239,68,68,0.1);
+            --gray: #64748b;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', 'Noto Sans SC', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        /* Nav */
+        .nav {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-brand {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-brand span { color: var(--text); font-weight: 400; }
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--primary); }
+        .nav-links a.active { color: var(--primary); }
+        .nav-cta {
+            background: var(--primary);
+            color: var(--white) !important;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.85rem !important;
+        }
+        .nav-cta:hover { background: var(--primary-light) !important; }
+
+        /* Page header */
+        .page-header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a78bfa 100%);
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--white);
+        }
+        .page-header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+        .page-header p { opacity: 0.9; font-size: 1rem; }
+
+        /* Category tabs */
+        .tabs {
+            max-width: 1200px;
+            margin: -20px auto 0;
+            padding: 0 24px;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            gap: 8px;
+        }
+        .tab {
+            background: var(--white);
+            border: 1px solid var(--border);
+            padding: 10px 20px;
+            border-radius: 10px 10px 0 0;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .tab:hover { color: var(--primary); }
+        .tab.active {
+            background: var(--white);
+            color: var(--primary);
+            border-bottom-color: var(--white);
+            margin-bottom: -1px;
+            padding-bottom: 11px;
+            font-weight: 600;
+        }
+
+        /* Main */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px 60px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-top: none;
+            border-radius: 0 0 var(--radius) var(--radius);
+        }
+
+        /* Article grid */
+        .article-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 24px;
+            padding: 32px 0;
+        }
+
+        .article-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .article-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .article-card-cover {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2.5rem;
+        }
+        .article-card-body {
+            padding: 20px;
+        }
+        .article-card-category {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 4px 10px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+        }
+        .cat-review { background: var(--primary-bg); color: var(--primary); }
+        .cat-report { background: var(--success-bg); color: var(--success); }
+        .cat-guide { background: var(--warning-bg); color: var(--warning); }
+        .cat-news { background: var(--danger-bg); color: var(--danger); }
+
+        .article-card-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            line-height: 1.5;
+            margin-bottom: 8px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .article-card-summary {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        .article-card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .article-card-views { display: flex; align-items: center; gap: 4px; }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 80px 24px;
+            color: var(--text-muted);
+        }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 16px; }
+        .empty-state h3 { color: var(--text-secondary); margin-bottom: 8px; }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 80px;
+            gap: 16px;
+            color: var(--text-muted);
+        }
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Article detail (single article view) */
+        .article-detail {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 40px 0;
+        }
+        .article-detail-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 24px;
+        }
+        .article-detail-back:hover { text-decoration: underline; }
+        .article-detail-category {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        .article-detail h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+        .article-detail-meta {
+            display: flex;
+            gap: 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+        .article-content {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: var(--text);
+        }
+        .article-content h2 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 32px 0 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+        .article-content h3 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin: 24px 0 12px;
+        }
+        .article-content p { margin-bottom: 16px; }
+        .article-content ul, .article-content ol {
+            margin: 12px 0 16px 24px;
+        }
+        .article-content li { margin-bottom: 6px; }
+        .article-content strong { font-weight: 600; }
+        .article-content code {
+            background: var(--bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .article-content pre {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        .article-content pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+        .article-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0;
+        }
+        .article-content th, .article-content td {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        .article-content th {
+            background: var(--bg);
+            font-weight: 600;
+        }
+        .article-content blockquote {
+            border-left: 4px solid var(--primary);
+            padding: 12px 16px;
+            background: var(--primary-bg);
+            border-radius: 0 8px 8px 0;
+            margin: 16px 0;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--text);
+            color: rgba(255,255,255,0.6);
+            padding: 48px 24px 24px;
+            margin-top: 60px;
+        }
+        .footer-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+        .footer-col h4 { color: white; font-size: 0.9rem; margin-bottom: 12px; }
+        .footer-col a {
+            display: block;
+            color: rgba(255,255,255,0.5);
+            text-decoration: none;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            transition: color 0.2s;
+        }
+        .footer-col a:hover { color: white; }
+        .footer-bottom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 768px) {
+            .article-grid { grid-template-columns: 1fr; }
+            .footer-inner { grid-template-columns: 1fr; }
+            .tabs { overflow-x: auto; flex-wrap: nowrap; }
+            .page-header h1 { font-size: 1.5rem; }
+            .article-detail h1 { font-size: 1.4rem; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="index.html" class="nav-brand">AI Club <span>In</span></a>
+        <div class="nav-links">
+            <a href="index.html">比价排行</a>
+            <a href="article.html" class="active">评测文章</a>
+            <a href="detect.html">检测工具</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Dynamic content -->
+<div id="app"></div>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="footer-inner">
+        <div class="footer-col">
+            <h4>AI Club In</h4>
+            <a href="index.html">首页</a>
+            <a href="article.html">评测文章</a>
+            <a href="detect.html">检测工具</a>
+        </div>
+        <div class="footer-col">
+            <h4>资源</h4>
+            <a href="#">API 中转站入门指南</a>
+            <a href="#">如何选择靠谱的中转站</a>
+            <a href="#">常见欺诈手段</a>
+        </div>
+        <div class="footer-col">
+            <h4>关于</h4>
+            <a href="#">关于我们</a>
+            <a href="#">检测方法说明</a>
+            <a href="#">联系方式</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <span>&copy; 2026 AI Club In. 仅供参考，不构成投资建议。</span>
+        <span>Powered by Supabase</span>
+    </div>
+</footer>
+
+<script>
+const SUPABASE_URL = 'https://ijqizaquvtpphqkysaoi.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_-vNnHjrgEPT2QvjIuBnK1Q_8BZZAU9V';
+
+let supabaseClient;
+
+const CATEGORIES = {
+    review: { label: '深度评测', icon: '🔍', class: 'cat-review' },
+    report: { label: '市场报告', icon: '📊', class: 'cat-report' },
+    guide: { label: '选购指南', icon: '📖', class: 'cat-guide' },
+    news: { label: '行业动态', icon: '📰', class: 'cat-news' }
+};
+
+const CATEGORY_ICONS = {
+    review: '🔍',
+    report: '📊',
+    guide: '📖',
+    news: '📰'
+};
+
+async function initSupabase() {
+    try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        return true;
+    } catch (e) {
+        console.error('Supabase init failed:', e);
+        return false;
+    }
+}
+
+function getUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+        slug: params.get('slug'),
+        category: params.get('cat') || 'all'
+    };
+}
+
+function formatDate(dateStr) {
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diff = now - d;
+    const mins = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+
+    if (mins < 60) return `${mins} 分钟前`;
+    if (hours < 24) return `${hours} 小时前`;
+    if (days < 7) return `${days} 天前`;
+    return d.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+// ===== List View =====
+function renderListPage(category = 'all') {
+    const app = document.getElementById('app');
+    const catLabel = category === 'all' ? '全部文章' : (CATEGORIES[category]?.label || '全部文章');
+
+    app.innerHTML = `
+        <div class="page-header">
+            <h1>${catLabel}</h1>
+            <p>用数据和探针说话，帮你全面了解各大中转站的真实表现</p>
+        </div>
+        <div class="tabs">
+            <div class="tab ${category === 'all' ? 'active' : ''}" data-cat="all">全部</div>
+            <div class="tab ${category === 'review' ? 'active' : ''}" data-cat="review">深度评测</div>
+            <div class="tab ${category === 'report' ? 'active' : ''}" data-cat="report">市场报告</div>
+            <div class="tab ${category === 'guide' ? 'active' : ''}" data-cat="guide">选购指南</div>
+            <div class="tab ${category === 'news' ? 'active' : ''}" data-cat="news">行业动态</div>
+        </div>
+        <main class="main">
+            <div id="article-list">
+                <div class="loading"><div class="spinner"></div><div>正在加载文章...</div></div>
+            </div>
+        </main>
+    `;
+
+    document.querySelectorAll('.tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            const cat = tab.dataset.cat;
+            history.pushState(null, '', `article.html${cat === 'all' ? '' : '?cat=' + cat}`);
+            renderListPage(cat);
+        });
+    });
+
+    loadArticles(category);
+}
+
+async function loadArticles(category) {
+    const container = document.getElementById('article-list');
+
+    try {
+        let query = supabaseClient
+            .from('articles')
+            .select('*')
+            .eq('is_published', true)
+            .order('published_at', { ascending: false })
+            .limit(50);
+
+        if (category !== 'all') {
+            query = query.eq('category', category);
+        }
+
+        const { data: articles, error } = await query;
+
+        if (error) throw error;
+
+        if (!articles || articles.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-state-icon">📝</div>
+                    <h3>暂无文章</h3>
+                    <p>文章正在生成中，请稍后再来查看</p>
+                </div>
+            `;
+            return;
+        }
+
+        container.innerHTML = `<div class="article-grid">${articles.map(renderArticleCard).join('')}</div>`;
+
+        container.querySelectorAll('.article-card').forEach(card => {
+            card.addEventListener('click', () => {
+                window.location.href = `article.html?slug=${card.dataset.slug}`;
+            });
+        });
+
+    } catch (e) {
+        console.error('Load articles failed:', e);
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">⚠️</div>
+                <h3>加载失败</h3>
+                <p>${e.message || '请稍后重试'}</p>
+            </div>
+        `;
+    }
+}
+
+function renderArticleCard(article) {
+    const cat = CATEGORIES[article.category] || CATEGORIES.review;
+    const icon = CATEGORY_ICONS[article.category] || '📄';
+
+    return `
+        <div class="article-card" data-slug="${article.slug}">
+            <div class="article-card-cover">${icon}</div>
+            <div class="article-card-body">
+                <span class="article-card-category ${cat.class}">${cat.label}</span>
+                <div class="article-card-title">${escapeHtml(article.title)}</div>
+                <div class="article-card-summary">${escapeHtml(article.summary || '')}</div>
+                <div class="article-card-meta">
+                    <span>${formatDate(article.published_at || article.created_at)}</span>
+                    <span class="article-card-views">👁 ${article.view_count || 0}</span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// ===== Detail View =====
+async function renderDetailPage(slug) {
+    const app = document.getElementById('app');
+    app.innerHTML = `<div class="loading"><div class="spinner"></div><div>正在加载文章...</div></div>`;
+
+    try {
+        const { data: article, error } = await supabaseClient
+            .from('articles')
+            .select('*')
+            .eq('slug', slug)
+            .eq('is_published', true)
+            .single();
+
+        if (error || !article) throw error || new Error('文章不存在');
+
+        // Increment view count (fire and forget)
+        supabaseClient
+            .from('articles')
+            .update({ view_count: (article.view_count || 0) + 1 })
+            .eq('id', article.id)
+            .then(() => {});
+
+        const cat = CATEGORIES[article.category] || CATEGORIES.review;
+        const htmlContent = marked.parse(article.content || '');
+
+        document.title = `${article.title} - AI Club In`;
+
+        app.innerHTML = `
+            <div class="page-header" style="padding: 32px 24px;">
+                <a href="article.html" class="article-detail-back" style="color: white; opacity: 0.8;">&larr; 返回文章列表</a>
+                <span class="article-detail-category ${cat.class}">${cat.label}</span>
+                <h1 style="color: white; font-size: 1.6rem; margin-top: 8px;">${escapeHtml(article.title)}</h1>
+            </div>
+            <main class="main">
+                <div class="article-detail">
+                    <a href="article.html" class="article-detail-back">&larr; 返回文章列表</a>
+                    <div class="article-detail-meta">
+                        <span>📅 ${formatDate(article.published_at || article.created_at)}</span>
+                        <span>👁 ${article.view_count || 0} 次阅读</span>
+                    </div>
+                    <div class="article-content">${htmlContent}</div>
+                </div>
+            </main>
+        `;
+
+    } catch (e) {
+        console.error('Load article failed:', e);
+        app.innerHTML = `
+            <div class="empty-state" style="padding-top: 80px;">
+                <div class="empty-state-icon">😕</div>
+                <h3>文章未找到</h3>
+                <p>该文章可能已被删除或尚未发布</p>
+                <a href="article.html" style="color: var(--primary); margin-top: 16px; display: inline-block;">返回文章列表</a>
+            </div>
+        `;
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// ===== Init =====
+async function main() {
+    await initSupabase();
+    const params = getUrlParams();
+
+    if (params.slug) {
+        await renderDetailPage(params.slug);
+    } else {
+        renderListPage(params.category);
+    }
+}
+
+window.addEventListener('popstate', () => {
+    const params = getUrlParams();
+    if (params.slug) {
+        renderDetailPage(params.slug);
+    } else {
+        renderListPage(params.category);
+    }
+});
+
+main();
+</script>
+
+</body>
+</html>
