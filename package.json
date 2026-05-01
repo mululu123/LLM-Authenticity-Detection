@@ -23,5 +23,8 @@
   "homepage": "https://github.com/mululu123/LLM-Authenticity-Detection#readme",
   "dependencies": {
     "@supabase/supabase-js": "^2.101.1"
+  },
+  "devDependencies": {
+    "undici": "^8.1.0"
   }
 }
