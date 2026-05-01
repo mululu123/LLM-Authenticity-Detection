@@ -541,7 +541,7 @@ function renderProviders(providers) {
         const url = p.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
 
         return `
-        <div class="provider-row" onclick="window.location.href='${p.url}'" target="_blank">
+        <div class="provider-row" onclick="window.location.href='detail.html?id=${p.id}'">
             <div class="provider-name">
                 <div class="provider-avatar">${initial}</div>
                 <div class="provider-info">
@@ -556,7 +556,7 @@ function renderProviders(providers) {
                 <span class="stars">${stars}</span>
                 <span class="rating-count">(${p.rating_count || 0})</span>
             </div>
-            <div><button class="view-btn" onclick="event.stopPropagation()">查看详情</button></div>
+            <div><button class="view-btn" onclick="event.stopPropagation();window.location.href='detail.html?id=${p.id}'">查看详情</button></div>
         </div>`;
     }).join('');
 }

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>站点详情 - AI Club In</title>
+    <meta name="description" content="API中转站详细评测报告，包含价格对比、风险评级、检测历史和用户评价。">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-bg: rgba(99,102,241,0.08);
+            --success: #10b981;
+            --success-bg: rgba(16,185,129,0.1);
+            --warning: #f59e0b;
+            --warning-bg: rgba(245,158,11,0.1);
+            --danger: #ef4444;
+            --danger-bg: rgba(239,68,68,0.1);
+            --gray: #64748b;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+            --radius: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter','Noto Sans SC',sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* Nav */
+        .nav { background: var(--white); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100; }
+        .nav-inner { max-width: 1000px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+        .nav-brand { font-size: 1.25rem; font-weight: 700; color: var(--primary); text-decoration: none; }
+        .nav-brand span { color: var(--text); font-weight: 400; }
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links a { color: var(--text-secondary); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+        .nav-links a:hover { color: var(--primary); }
+
+        /* Layout */
+        .main { max-width: 1000px; margin: 0 auto; padding: 32px 24px; }
+        .back-link { display: inline-flex; align-items: center; gap: 6px; color: var(--text-secondary); text-decoration: none; font-size: 0.85rem; margin-bottom: 24px; }
+        .back-link:hover { color: var(--primary); }
+
+        /* Header Card */
+        .header-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+        .header-left { display: flex; gap: 20px; align-items: flex-start; }
+        .provider-avatar {
+            width: 56px; height: 56px; border-radius: 12px;
+            background: var(--primary-bg);
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 1.5rem; color: var(--primary);
+            flex-shrink: 0;
+        }
+        .provider-meta h1 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+        .provider-url { font-size: 0.85rem; color: var(--primary); text-decoration: none; }
+        .provider-url:hover { text-decoration: underline; }
+        .provider-desc { font-size: 0.9rem; color: var(--text-secondary); margin-top: 8px; line-height: 1.5; }
+
+        .header-badges { display: flex; gap: 12px; flex-wrap: wrap; }
+        .badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+        }
+        .badge-risk { background: var(--success-bg); color: var(--success); }
+        .badge-risk.B { background: #dbeafe; color: #3b82f6; }
+        .badge-risk.C { background: var(--warning-bg); color: var(--warning); }
+        .badge-risk.D { background: var(--danger-bg); color: var(--danger); }
+        .badge-risk.untested { background: #f1f5f9; color: var(--text-muted); }
+        .badge-models { background: #f1f5f9; color: var(--text-secondary); }
+        .badge-rating { background: #fefce8; color: #ca8a04; }
+
+        /* Stats Row */
+        .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+        .stat-card {
+            background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+            padding: 20px; text-align: center;
+        }
+        .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--primary); }
+        .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 4px; }
+
+        /* Section */
+        .section {
+            background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow);
+            margin-bottom: 24px; overflow: hidden;
+        }
+        .section-header {
+            padding: 20px 24px; border-bottom: 1px solid var(--border);
+            font-size: 1rem; font-weight: 600; display: flex; justify-content: space-between; align-items: center;
+        }
+        .section-body { padding: 24px; }
+
+        /* Models Table */
+        .models-table { width: 100%; border-collapse: collapse; }
+        .models-table th { text-align: left; padding: 10px 12px; font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); background: #f8fafc; }
+        .models-table td { padding: 12px; font-size: 0.85rem; border-bottom: 1px solid var(--border); }
+        .models-table tr:last-child td { border-bottom: none; }
+        .models-table tr:hover { background: #f8fafc; }
+        .model-name { font-weight: 600; }
+        .mult-low { color: var(--success); font-weight: 600; }
+        .mult-mid { color: var(--warning); font-weight: 600; }
+        .mult-high { color: var(--danger); font-weight: 600; }
+
+        /* Detection History */
+        .detection-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .detection-item:last-child { border-bottom: none; }
+        .det-left { display: flex; gap: 12px; align-items: center; }
+        .det-date { font-size: 0.8rem; color: var(--text-muted); min-width: 90px; }
+        .det-result { font-size: 0.85rem; }
+        .det-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+
+        /* Reviews */
+        .review-item { padding: 16px 0; border-bottom: 1px solid var(--border); }
+        .review-item:last-child { border-bottom: none; }
+        .review-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+        .review-stars { color: #fbbf24; font-size: 0.85rem; }
+        .review-date { font-size: 0.75rem; color: var(--text-muted); }
+        .review-text { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; }
+        .review-context { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; font-style: italic; }
+
+        /* Review Form */
+        .review-form { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+        .form-row { margin-bottom: 12px; }
+        .form-row label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 6px; color: var(--text-secondary); }
+        .star-input { display: flex; gap: 4px; }
+        .star-input span { font-size: 1.5rem; cursor: pointer; color: #d1d5db; transition: color 0.15s; }
+        .star-input span.active { color: #fbbf24; }
+        .star-input span:hover { color: #fbbf24; }
+        .form-row textarea, .form-row input[type="text"] {
+            width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+            font-size: 0.85rem; font-family: inherit; resize: vertical; outline: none;
+        }
+        .form-row textarea:focus, .form-row input[type="text"]:focus { border-color: var(--primary); }
+        .submit-btn {
+            background: var(--primary); color: var(--white); border: none;
+            padding: 10px 24px; border-radius: 8px; font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; font-family: inherit;
+        }
+        .submit-btn:hover { background: var(--primary-light); }
+
+        /* Empty */
+        .empty { text-align: center; padding: 32px; color: var(--text-muted); font-size: 0.85rem; }
+
+        /* Loading */
+        .loading { text-align: center; padding: 60px; color: var(--text-muted); }
+        .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 768px) {
+            .stats-row { grid-template-columns: repeat(2, 1fr); }
+            .header-top { flex-direction: column; }
+            .header-badges { margin-top: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <div class="nav-inner">
+        <a href="/" class="nav-brand">AI Club <span>In</span></a>
+        <div class="nav-links">
+            <a href="/">排行榜</a>
+            <a href="detect.html">检测工具</a>
+        </div>
+    </div>
+</nav>
+
+<main class="main">
+    <a href="/" class="back-link">← 返回排行榜</a>
+
+    <div id="content">
+        <div class="loading"><div class="spinner"></div>加载中...</div>
+    </div>
+</main>
+
+<script>
+const SUPABASE_URL = 'https://ijqizaquvtpphqkysaoi.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_-vNnHjrgEPT2QvjIuBnK1Q_8BZZAU9V';
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const params = new URLSearchParams(window.location.search);
+const providerId = params.get('id');
+const providerName = params.get('name');
+
+let selectedRating = 0;
+
+async function loadProvider() {
+    let query = supabase.from('providers').select('*');
+    if (providerId) query = query.eq('id', providerId);
+    else if (providerName) query = query.eq('name', providerName);
+    else { showError('缺少站点参数'); return; }
+
+    const { data, error } = await query.single();
+    if (error || !data) { showError('未找到该站点'); return; }
+    return data;
+}
+
+async function loadModels(providerId) {
+    const { data } = await supabase.from('provider_models').select('*').eq('provider_id', providerId).order('model_name');
+    return data || [];
+}
+
+async function loadDetections(providerId) {
+    const { data } = await supabase.from('detection_results').select('*').eq('provider_id', providerId).order('created_at', { ascending: false }).limit(10);
+    return data || [];
+}
+
+async function loadRatings(providerId) {
+    const { data } = await supabase.from('provider_ratings').select('*').eq('provider_id', providerId).order('created_at', { ascending: false }).limit(20);
+    return data || [];
+}
+
+function renderStars(rating) {
+    return '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
+}
+
+function formatDate(iso) {
+    if (!iso) return '--';
+    return new Date(iso).toLocaleDateString('zh-CN');
+}
+
+function multClass(m) {
+    if (!m) return '';
+    if (m <= 1.0) return 'mult-low';
+    if (m <= 1.5) return 'mult-mid';
+    return 'mult-high';
+}
+
+function riskLabel(level) {
+    const map = { A: '安全', B: '一般', C: '可疑', D: '高危', untested: '未检测' };
+    return map[level] || level;
+}
+
+async function render() {
+    const provider = await loadProvider();
+    if (!provider) return;
+
+    const [models, detections, ratings] = await Promise.all([
+        loadModels(provider.id),
+        loadDetections(provider.id),
+        loadRatings(provider.id)
+    ]);
+
+    document.title = `${provider.name} - AI Club In`;
+
+    const initial = provider.name.charAt(0).toUpperCase();
+    const cleanUrl = provider.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+    const container = document.getElementById('content');
+    container.innerHTML = `
+        <!-- Header -->
+        <div class="header-card">
+            <div class="header-top">
+                <div class="header-left">
+                    <div class="provider-avatar">${initial}</div>
+                    <div class="provider-meta">
+                        <h1>${provider.name}</h1>
+                        <a href="${provider.url}" target="_blank" class="provider-url">${cleanUrl} ↗</a>
+                        ${provider.description ? `<p class="provider-desc">${provider.description}</p>` : ''}
+                    </div>
+                </div>
+                <div class="header-badges">
+                    <span class="badge badge-risk ${provider.risk_level}">风险: ${riskLabel(provider.risk_level)}</span>
+                    <span class="badge badge-models">${provider.model_count || 0} 个模型</span>
+                    ${provider.avg_rating > 0 ? `<span class="badge badge-rating">${renderStars(provider.avg_rating)} ${provider.avg_rating.toFixed(1)}</span>` : ''}
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-value">${provider.risk_level === 'untested' ? '--' : provider.risk_level}</div>
+                <div class="stat-label">风险等级</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${provider.avg_multiplier ? provider.avg_multiplier + 'x' : '--'}</div>
+                <div class="stat-label">平均倍率</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${provider.model_count || 0}</div>
+                <div class="stat-label">支持模型</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">${provider.avg_rating > 0 ? provider.avg_rating.toFixed(1) : '--'}</div>
+                <div class="stat-label">用户评分</div>
+            </div>
+        </div>
+
+        <!-- Models Pricing -->
+        <div class="section">
+            <div class="section-header">
+                <span>模型与定价</span>
+                ${provider.last_detected_at ? `<span style="font-size:0.75rem;color:var(--text-muted)">最近检测: ${formatDate(provider.last_detected_at)}</span>` : ''}
+            </div>
+            <div class="section-body">
+                ${models.length > 0 ? `
+                    <table class="models-table">
+                        <thead><tr><th>模型</th><th>倍率</th><th>输入价格</th><th>输出价格</th><th>状态</th></tr></thead>
+                        <tbody>
+                            ${models.map(m => `
+                                <tr>
+                                    <td class="model-name">${m.model_name}</td>
+                                    <td class="${multClass(m.multiplier)}">${m.multiplier ? m.multiplier + 'x' : '--'}</td>
+                                    <td>${m.price_per_1k_input ? '$' + m.price_per_1k_input.toFixed(4) : '--'}</td>
+                                    <td>${m.price_per_1k_output ? '$' + m.price_per_1k_output.toFixed(4) : '--'}</td>
+                                    <td>${m.is_available ? '<span style="color:var(--success)">可用</span>' : '<span style="color:var(--text-muted)">不可用</span>'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                ` : '<div class="empty">暂无定价数据。使用检测工具可以自动获取模型列表。</div>'}
+            </div>
+        </div>
+
+        <!-- Detection History -->
+        <div class="section">
+            <div class="section-header">检测历史</div>
+            <div class="section-body">
+                ${detections.length > 0 ? detections.map(d => `
+                    <div class="detection-item">
+                        <div class="det-left">
+                            <span class="det-date">${formatDate(d.created_at)}</span>
+                            <span class="det-result">声称: ${d.claimed_model} ${d.detected_model ? '→ 实测: ' + d.detected_model : ''}</span>
+                        </div>
+                        <div>
+                            <span class="det-badge badge-risk ${d.is_fraud ? 'D' : 'A'}">${d.is_fraud ? '欺诈' : '通过'}</span>
+                            <span style="margin-left:8px;font-size:0.8rem;color:var(--text-muted)">诈骗指数: ${d.fraud_index ?? '--'}</span>
+                        </div>
+                    </div>
+                `).join('') : '<div class="empty">暂无检测记录</div>'}
+            </div>
+        </div>
+
+        <!-- User Reviews -->
+        <div class="section">
+            <div class="section-header">
+                <span>用户评价 (${provider.rating_count || 0})</span>
+            </div>
+            <div class="section-body">
+                ${ratings.length > 0 ? ratings.map(r => `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <span class="review-stars">${renderStars(r.rating)}</span>
+                            <span class="review-date">${formatDate(r.created_at)}</span>
+                        </div>
+                        ${r.comment ? `<p class="review-text">${r.comment}</p>` : ''}
+                        ${r.usage_context ? `<p class="review-context">场景: ${r.usage_context}</p>` : ''}
+                    </div>
+                `).join('') : '<div class="empty">暂无评价，做第一个评价的人吧</div>'}
+
+                <!-- Review Form -->
+                <div class="review-form">
+                    <h4 style="font-size:0.9rem;margin-bottom:12px;">提交你的评价</h4>
+                    <div class="form-row">
+                        <label>评分</label>
+                        <div class="star-input" id="star-input">
+                            ${[1,2,3,4,5].map(i => `<span data-val="${i}" onclick="setRating(${i})">★</span>`).join('')}
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <label>使用场景</label>
+                        <input type="text" id="review-context" placeholder="例如：日常开发、生产环境、个人学习...">
+                    </div>
+                    <div class="form-row">
+                        <label>评价内容</label>
+                        <textarea id="review-text" rows="3" placeholder="分享你的使用体验..."></textarea>
+                    </div>
+                    <button class="submit-btn" onclick="submitReview('${provider.id}')">提交评价</button>
+                    <span id="submit-msg" style="margin-left:12px;font-size:0.8rem;"></span>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function setRating(val) {
+    selectedRating = val;
+    document.querySelectorAll('#star-input span').forEach((s, i) => {
+        s.classList.toggle('active', i < val);
+    });
+}
+
+async function submitReview(providerId) {
+    if (!selectedRating) {
+        document.getElementById('submit-msg').textContent = '请先选择评分';
+        document.getElementById('submit-msg').style.color = 'var(--danger)';
+        return;
+    }
+
+    const msg = document.getElementById('submit-msg');
+    msg.textContent = '提交中...';
+    msg.style.color = 'var(--text-muted)';
+
+    const { error } = await supabase.from('provider_ratings').insert({
+        provider_id: providerId,
+        rating: selectedRating,
+        comment: document.getElementById('review-text').value.trim() || null,
+        usage_context: document.getElementById('review-context').value.trim() || null,
+    });
+
+    if (error) {
+        msg.textContent = '提交失败，请稍后重试';
+        msg.style.color = 'var(--danger)';
+    } else {
+        msg.textContent = '评价已提交，感谢你的反馈！';
+        msg.style.color = 'var(--success)';
+        setTimeout(() => render(), 1500);
+    }
+}
+
+function showError(text) {
+    document.getElementById('content').innerHTML = `
+        <div style="text-align:center;padding:80px 20px;">
+            <div style="font-size:3rem;margin-bottom:16px;">😕</div>
+            <h3 style="color:var(--text-secondary);margin-bottom:8px;">${text}</h3>
+            <a href="/" style="color:var(--primary);font-size:0.9rem;">返回排行榜</a>
+        </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
