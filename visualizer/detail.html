@@ -188,7 +188,7 @@
 <script>
 const SUPABASE_URL = 'https://ijqizaquvtpphqkysaoi.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_-vNnHjrgEPT2QvjIuBnK1Q_8BZZAU9V';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const params = new URLSearchParams(window.location.search);
 const providerId = params.get('id');
@@ -197,7 +197,7 @@ const providerName = params.get('name');
 let selectedRating = 0;
 
 async function loadProvider() {
-    let query = supabase.from('providers').select('*');
+    let query = db.from('providers').select('*');
     if (providerId) query = query.eq('id', providerId);
     else if (providerName) query = query.eq('name', providerName);
     else { showError('缺少站点参数'); return; }
@@ -208,17 +208,17 @@ async function loadProvider() {
 }
 
 async function loadModels(providerId) {
-    const { data } = await supabase.from('provider_models').select('*').eq('provider_id', providerId).order('model_name');
+    const { data } = await db.from('provider_models').select('*').eq('provider_id', providerId).order('model_name');
     return data || [];
 }
 
 async function loadDetections(providerId) {
-    const { data } = await supabase.from('detection_results').select('*').eq('provider_id', providerId).order('created_at', { ascending: false }).limit(10);
+    const { data } = await db.from('detection_results').select('*').eq('provider_id', providerId).order('created_at', { ascending: false }).limit(10);
     return data || [];
 }
 
 async function loadRatings(providerId) {
-    const { data } = await supabase.from('provider_ratings').select('*').eq('provider_id', providerId).order('created_at', { ascending: false }).limit(20);
+    const { data } = await db.from('provider_ratings').select('*').eq('provider_id', providerId).order('created_at', { ascending: false }).limit(20);
     return data || [];
 }
 
@@ -409,7 +409,7 @@ async function submitReview(providerId) {
     msg.textContent = '提交中...';
     msg.style.color = 'var(--text-muted)';
 
-    const { error } = await supabase.from('provider_ratings').insert({
+    const { error } = await db.from('provider_ratings').insert({
         provider_id: providerId,
         rating: selectedRating,
         comment: document.getElementById('review-text').value.trim() || null,
