@@ -244,14 +244,15 @@ function riskLabel(level) {
 }
 
 async function render() {
-    const provider = await loadProvider();
-    if (!provider) return;
+    try {
+        const provider = await loadProvider();
+        if (!provider) return;
 
-    const [models, detections, ratings] = await Promise.all([
-        loadModels(provider.id),
-        loadDetections(provider.id),
-        loadRatings(provider.id)
-    ]);
+        const [models, detections, ratings] = await Promise.all([
+            loadModels(provider.id),
+            loadDetections(provider.id),
+            loadRatings(provider.id)
+        ]);
 
     document.title = `${provider.name} - AI Club In`;
 
@@ -428,6 +429,12 @@ function showError(text) {
             <h3 style="color:var(--text-secondary);margin-bottom:8px;">${text}</h3>
             <a href="/" style="color:var(--primary);font-size:0.9rem;">返回排行榜</a>
         </div>`;
+}
+
+    } catch (e) {
+        console.error('Render error:', e);
+        showError('页面加载失败: ' + (e.message || '未知错误'));
+    }
 }
 
 render();
