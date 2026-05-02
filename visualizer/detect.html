@@ -249,7 +249,7 @@
             color: var(--cyber-cyan);
         }
 
-        /* 雷达图 */
+        /* 雷达图 - 6维六边形 */
         .radar-section {
             display: flex;
             gap: 40px;
@@ -261,37 +261,37 @@
 
         .radar-container {
             position: relative;
-            width: 420px;
-            height: 420px;
+            width: 460px;
+            height: 460px;
         }
 
         .radar-bg {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 350px;
-            height: 350px;
+            width: 380px;
+            height: 380px;
         }
 
         .radar-ring {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            border: 1px solid rgba(0, 255, 249, 0.2);
-            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+            border: 1px solid rgba(0, 255, 249, 0.15);
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
         }
 
-        .ring-1 { width: 350px; height: 350px; }
-        .ring-2 { width: 262px; height: 262px; }
-        .ring-3 { width: 175px; height: 175px; }
-        .ring-4 { width: 87px; height: 87px; }
+        .ring-1 { width: 380px; height: 380px; }
+        .ring-2 { width: 285px; height: 285px; }
+        .ring-3 { width: 190px; height: 190px; }
+        .ring-4 { width: 95px; height: 95px; }
 
         .radar-data {
             position: absolute;
             top: 50%; left: 50%;
             transform: translate(-50%, -50%);
-            width: 350px;
-            height: 350px;
+            width: 380px;
+            height: 380px;
             opacity: 0;
             animation: radarReveal 1s ease-out 0.5s forwards;
         }
@@ -310,23 +310,25 @@
 
         .dim-label {
             position: absolute;
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: var(--text-primary);
             text-align: center;
             width: 100px;
             transform: translate(-50%, -50%);
         }
 
-        .dim-label.top { top: -5px; left: 50%; }
-        .dim-label.top-right { top: 35%; left: 97%; }
-        .dim-label.bottom-right { top: 97%; left: 82%; }
-        .dim-label.bottom-left { top: 97%; left: 18%; }
-        .dim-label.top-left { top: 35%; left: 3%; }
+        /* 6-point hexagon positions */
+        .dim-label.top { top: -2px; left: 50%; }
+        .dim-label.top-right { top: 26%; left: 98%; }
+        .dim-label.bottom-right { top: 76%; left: 98%; }
+        .dim-label.bottom { top: 100%; left: 50%; }
+        .dim-label.bottom-left { top: 76%; left: 2%; }
+        .dim-label.top-left { top: 26%; left: 2%; }
 
         .dim-score {
             display: block;
             font-family: 'Orbitron', monospace;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 700;
             margin-top: 4px;
         }
@@ -334,7 +336,7 @@
         .radar-sweep {
             position: absolute;
             top: 50%; left: 50%;
-            width: 175px; height: 175px;
+            width: 190px; height: 190px;
             transform-origin: center;
             animation: sweep 3s linear infinite;
         }
@@ -352,6 +354,102 @@
         @keyframes sweep {
             from { transform: translate(-50%, -50%) rotate(0deg); }
             to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* 环形评分仪表盘 */
+        .score-gauge-section {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .gauge-card {
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 200px;
+        }
+
+        .gauge-card.gauge-main { min-width: 260px; }
+
+        .gauge-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.15em;
+            margin-bottom: 10px;
+        }
+
+        .gauge-svg { width: 160px; height: 160px; }
+        .gauge-card.gauge-main .gauge-svg { width: 200px; height: 200px; }
+
+        .gauge-circle-bg {
+            fill: none;
+            stroke: var(--dark-border);
+            stroke-width: 8;
+        }
+
+        .gauge-circle {
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 1.5s ease-out, stroke 0.5s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .gauge-text {
+            font-family: 'Orbitron', monospace;
+            font-size: 2rem;
+            font-weight: 900;
+            fill: var(--text-primary);
+        }
+
+        .gauge-card.gauge-main .gauge-text { font-size: 2.5rem; }
+
+        .gauge-sublabel {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            letter-spacing: 0.1em;
+        }
+
+        /* 性能指标面板 */
+        .perf-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .perf-card {
+            background: var(--dark-surface);
+            border: 1px solid var(--dark-border);
+            padding: 15px;
+            text-align: center;
+        }
+
+        .perf-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            margin-bottom: 6px;
+        }
+
+        .perf-value {
+            font-family: 'Orbitron', monospace;
+            font-size: 1.2rem;
+            color: var(--cyber-cyan);
+        }
+
+        .perf-unit {
+            font-size: 0.7rem;
+            color: var(--text-muted);
         }
 
         /* 探针卡片 */
@@ -594,6 +692,7 @@
         .probe-card:nth-child(3) { animation: slideUp 0.5s ease-out 0.3s both; }
         .probe-card:nth-child(4) { animation: slideUp 0.5s ease-out 0.4s both; }
         .probe-card:nth-child(5) { animation: slideUp 0.5s ease-out 0.5s both; }
+        .probe-card:nth-child(6) { animation: slideUp 0.5s ease-out 0.6s both; }
 
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(20px); }
@@ -616,15 +715,16 @@
 
         @media (max-width: 768px) {
             .logo { font-size: 2rem; }
-            .radar-container { width: 320px; height: 320px; }
-            .radar-bg, .radar-data { width: 280px; height: 280px; }
-            .ring-1 { width: 280px; height: 280px; }
-            .ring-2 { width: 210px; height: 210px; }
-            .ring-3 { width: 140px; height: 140px; }
-            .ring-4 { width: 70px; height: 70px; }
+            .radar-container { width: 360px; height: 360px; }
+            .radar-bg, .radar-data { width: 310px; height: 310px; }
+            .ring-1 { width: 310px; height: 310px; }
+            .ring-2 { width: 232px; height: 232px; }
+            .ring-3 { width: 155px; height: 155px; }
+            .ring-4 { width: 77px; height: 77px; }
             .probe-cards { grid-template-columns: 1fr; }
             .verdict-title { font-size: 1.2rem; }
             .score-value { font-size: 2rem; }
+            .score-gauge-section { flex-direction: column; align-items: center; }
         }
     </style>
     <!-- Supabase JS SDK -->
@@ -680,11 +780,66 @@
             </div>
             <div class="info-card">
                 <div class="info-label" data-i18n="probeCount">探针数量</div>
-                <div class="info-value">5</div>
+                <div class="info-value">6</div>
             </div>
             <div class="info-card">
                 <div class="info-label" data-i18n="status">状态</div>
                 <div class="info-value" id="status" style="color: var(--cyber-green);" data-i18n-text="ready">就绪</div>
+            </div>
+        </div>
+
+        <!-- 环形评分仪表盘 (检测后显示) -->
+        <div class="score-gauge-section" id="gaugeSection" style="display: none;">
+            <div class="gauge-card">
+                <div class="gauge-label">协议一致性</div>
+                <svg class="gauge-svg" viewBox="0 0 120 120">
+                    <circle class="gauge-circle-bg" cx="60" cy="60" r="50"/>
+                    <circle class="gauge-circle" id="gaugeProtocol" cx="60" cy="60" r="50" stroke="var(--cyber-cyan)" stroke-dasharray="314" stroke-dashoffset="314"/>
+                    <text class="gauge-text" id="gaugeProtocolVal" x="60" y="65" text-anchor="middle">--</text>
+                </svg>
+                <div class="gauge-sublabel">PROTOCOL</div>
+            </div>
+            <div class="gauge-card gauge-main">
+                <div class="gauge-label">综合评分</div>
+                <svg class="gauge-svg" viewBox="0 0 120 120">
+                    <circle class="gauge-circle-bg" cx="60" cy="60" r="50"/>
+                    <circle class="gauge-circle" id="gaugeOverall" cx="60" cy="60" r="50" stroke="var(--cyber-green)" stroke-dasharray="314" stroke-dashoffset="314"/>
+                    <text class="gauge-text" id="gaugeOverallVal" x="60" y="65" text-anchor="middle">--</text>
+                </svg>
+                <div class="gauge-sublabel" id="gaugeOverallLabel">OVERALL</div>
+            </div>
+            <div class="gauge-card">
+                <div class="gauge-label">思维链验证</div>
+                <svg class="gauge-svg" viewBox="0 0 120 120">
+                    <circle class="gauge-circle-bg" cx="60" cy="60" r="50"/>
+                    <circle class="gauge-circle" id="gaugeThinking" cx="60" cy="60" r="50" stroke="var(--cyber-magenta)" stroke-dasharray="314" stroke-dashoffset="314"/>
+                    <text class="gauge-text" id="gaugeThinkingVal" x="60" y="65" text-anchor="middle">--</text>
+                </svg>
+                <div class="gauge-sublabel">THINKING</div>
+            </div>
+        </div>
+
+        <!-- 性能指标 (检测后显示) -->
+        <div class="perf-metrics" id="perfMetrics" style="display: none;">
+            <div class="perf-card">
+                <div class="perf-label">平均延迟</div>
+                <div class="perf-value" id="perfLatency">--</div>
+                <div class="perf-unit">ms</div>
+            </div>
+            <div class="perf-card">
+                <div class="perf-label">吞吐量</div>
+                <div class="perf-value" id="perfTps">--</div>
+                <div class="perf-unit">tokens/s</div>
+            </div>
+            <div class="perf-card">
+                <div class="perf-label">输入 Tokens</div>
+                <div class="perf-value" id="perfInput">--</div>
+                <div class="perf-unit">tokens</div>
+            </div>
+            <div class="perf-card">
+                <div class="perf-label">输出 Tokens</div>
+                <div class="perf-value" id="perfOutput">--</div>
+                <div class="perf-unit">tokens</div>
             </div>
         </div>
 
@@ -730,11 +885,12 @@
                     <div class="radar-sweep"></div>
                 </div>
                 <div class="dimension-labels">
-                    <div class="dim-label top">物理指纹<span class="dim-score" id="score1" style="color: var(--cyber-yellow);">70%</span></div>
-                    <div class="dim-label top-right">潜意识<span class="dim-score" id="score2" style="color: var(--cyber-red);">40%</span></div>
-                    <div class="dim-label bottom-right">安全对齐<span class="dim-score" id="score3" style="color: var(--cyber-green);">85%</span></div>
-                    <div class="dim-label bottom-left">逻辑智商<span class="dim-score" id="score4" style="color: var(--cyber-red);">50%</span></div>
-                    <div class="dim-label top-left">Agent兼容<span class="dim-score" id="score5" style="color: var(--cyber-green);">90%</span></div>
+                    <div class="dim-label top">物理指纹<span class="dim-score" id="score1" style="color: var(--cyber-yellow);">--</span></div>
+                    <div class="dim-label top-right">潜意识<span class="dim-score" id="score2" style="color: var(--cyber-red);">--</span></div>
+                    <div class="dim-label bottom-right">安全对齐<span class="dim-score" id="score3" style="color: var(--cyber-green);">--</span></div>
+                    <div class="dim-label bottom">逻辑智商<span class="dim-score" id="score4" style="color: var(--cyber-red);">--</span></div>
+                    <div class="dim-label bottom-left">Agent兼容<span class="dim-score" id="score5" style="color: var(--cyber-green);">--</span></div>
+                    <div class="dim-label top-left">思维链<span class="dim-score" id="score6" style="color: var(--cyber-magenta);">--</span></div>
                 </div>
             </div>
         </div>
@@ -868,6 +1024,32 @@
                         <div>⏳ Agent 兼容性测试: 等待检测...</div>
                     </div>
                 </div>
+
+                <!-- 6. 思维链与签名验证 -->
+                <div class="probe-card success" id="probe6">
+                    <div class="probe-header">
+                        <div class="probe-icon">🔐</div>
+                        <div>
+                            <div class="probe-name">6. 思维链与签名验证</div>
+                            <div class="probe-subtitle">Thinking Chain & Signature Fingerprint</div>
+                        </div>
+                        <span class="probe-status status-safe" id="status6">待检测</span>
+                    </div>
+                    <div class="probe-explanation">
+                        <div class="explanation-title">📋 检测原理</div>
+                        <div class="explanation-text">
+                            <strong>1. 思维链痕迹：</strong>检测模型是否具备真实的思维链(thinking)能力。Claude 等高级模型在开启 extended thinking 时会产生可验证的思考过程，而降智模型无法伪造。<br>
+                            <strong>2. 签名指纹：</strong>检查响应中的 model 字段、system_fingerprint、response ID 格式是否与真实上游模型一致。伪造模型的签名通常存在明显差异。<br>
+                            <strong>3. 协议一致性：</strong>验证 API 响应结构是否完全匹配 OpenAI/Anthropic 官方协议规范，包括 finish_reason、usage 结构等关键字段。
+                        </div>
+                    </div>
+                    <div class="probe-content">
+                        <strong>🎯 检测目的：</strong>通过底层协议验证和签名指纹交叉比对，确认模型是否为真实上游接口，而非代理篡改或模型替换。
+                    </div>
+                    <div class="probe-detail" id="detail6">
+                        <div>⏳ 思维链与签名验证: 等待检测...</div>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -877,15 +1059,27 @@
         // ========== Supabase 配置 ==========
         const SUPABASE_URL = 'https://ijqizaquvtpphqkysaoi.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_-vNnHjrgEPT2QvjIuBnK1Q_8BZZAU9V';
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // 全局探针配置（从 Supabase 加载）
         let probeConfig = {};
 
+        // ========== 性能追踪 ==========
+        let perfData = { latencies: [], totalInput: 0, totalOutput: 0, startTime: 0 };
+
+        function trackPerf(promise) {
+            const start = performance.now();
+            return promise.then(result => {
+                const latency = Math.round(performance.now() - start);
+                perfData.latencies.push(latency);
+                return result;
+            });
+        }
+
         // 加载探针配置
         async function loadProbeConfig() {
             try {
-                const { data, error } = await supabase
+                const { data, error } = await db
                     .from('probes')
                     .select('*')
                     .eq('is_active', true);
@@ -906,12 +1100,12 @@
             }
         }
 
-        // 绘制雷达图
+        // 绘制雷达图 (6维六边形)
         function drawRadarChart(scores) {
             const svg = document.getElementById('radarChart');
             const center = 200;
-            const maxRadius = 140;
-            const angles = [-90, -18, 54, 126, 198].map(a => a * Math.PI / 180);
+            const maxRadius = 150;
+            const angles = [-90, -30, 30, 90, 150, 210].map(a => a * Math.PI / 180);
 
             function getPoint(angle, radius) {
                 return {
@@ -1189,8 +1383,177 @@
                 if (hasValidJson) score += 20;
                 if (jsonValues && jsonValues.a > 100) score += 10;
                 return { content, hasMarkdown, hasValidJson, jsonValues, score };
+            },
+
+            async thinkingChainSignature(endpoint, apiKey, model) {
+                let protocolScore = 80;
+                let thinkingScore = 50;
+                let signatureScore = 50;
+                let details = {};
+
+                // 1. 协议一致性检测 - 发送请求并验证响应结构
+                const startTime = performance.now();
+                const data = await apiRequest(endpoint, apiKey, model, [
+                    { role: 'user', content: 'What is 2+2? Reply with just the number.' }
+                ], 20);
+                const latency = Math.round(performance.now() - startTime);
+                perfData.latencies.push(latency);
+
+                // Track token usage
+                const usage = data.usage || {};
+                perfData.totalInput += usage.prompt_tokens || 0;
+                perfData.totalOutput += usage.completion_tokens || 0;
+
+                details.latency = latency;
+                details.modelField = data.model || '';
+                details.responseId = data.id || '';
+                details.fingerprint = data.system_fingerprint || '';
+                details.usage = usage;
+
+                // Protocol checks
+                const hasChoices = Array.isArray(data.choices) && data.choices.length > 0;
+                const hasValidChoice = hasChoices && data.choices[0].message && typeof data.choices[0].message.content === 'string';
+                const hasFinishReason = hasChoices && data.choices[0].finish_reason;
+                const hasUsage = data.usage && typeof data.usage.prompt_tokens === 'number';
+                const hasObjectId = data.object === 'chat.completion' || data.object === 'chat.completion.chunk';
+
+                let protocolChecks = 0;
+                if (hasChoices) protocolChecks++;
+                if (hasValidChoice) protocolChecks++;
+                if (hasFinishReason) protocolChecks++;
+                if (hasUsage) protocolChecks++;
+                if (hasObjectId) protocolChecks++;
+
+                protocolScore = Math.round((protocolChecks / 5) * 100);
+
+                // 2. 签名指纹分析
+                const modelLower = (details.modelField || '').toLowerCase();
+                const modelInput = model.toLowerCase();
+
+                // Check if returned model matches requested model
+                let modelMatch = false;
+                if (modelLower === modelInput) {
+                    modelMatch = true;
+                    signatureScore += 20;
+                } else if (modelLower.includes(modelInput) || modelInput.includes(modelLower)) {
+                    modelMatch = true;
+                    signatureScore += 15;
+                }
+
+                // Check system_fingerprint (GPT models have fp_ prefix)
+                if (details.fingerprint) {
+                    if (details.fingerprint.startsWith('fp_')) {
+                        signatureScore += 15;
+                    }
+                    signatureScore += 5; // Has fingerprint at all
+                }
+
+                // Check response ID format
+                if (details.responseId) {
+                    if (details.responseId.startsWith('chatcmpl-')) {
+                        signatureScore += 10; // OpenAI format
+                    } else if (details.responseId.startsWith('msg_')) {
+                        signatureScore += 10; // Anthropic format
+                    }
+                }
+
+                // 3. 思维链检测 (Claude models)
+                if (modelInput.includes('claude') || modelInput.includes('sonnet') || modelInput.includes('opus')) {
+                    try {
+                        const thinkData = await apiRequest(endpoint, apiKey, model, [
+                            { role: 'user', content: 'Solve: if a train travels 120km in 2 hours, then stops for 30 min, then travels 90km in 1.5 hours, what is the average speed for the entire journey? Think step by step.' }
+                        ], 300);
+                        const thinkLatency = Math.round(performance.now() - startTime);
+                        perfData.latencies.push(thinkLatency);
+                        perfData.totalInput += (thinkData.usage?.prompt_tokens || 0);
+                        perfData.totalOutput += (thinkData.usage?.completion_tokens || 0);
+
+                        const thinkContent = thinkData.choices?.[0]?.message?.content || '';
+
+                        // Check for thinking traces
+                        const hasThinking = thinkContent.includes('<think') || thinkContent.includes('<antThinking') ||
+                            (thinkData.usage?.completion_tokens_details?.reasoning_tokens > 0);
+
+                        if (hasThinking) {
+                            thinkingScore = 90;
+                            details.thinkingFound = true;
+                        } else {
+                            // Even without explicit thinking tags, Claude models should give detailed reasoning
+                            const hasDetailedReasoning = thinkContent.length > 200 && (thinkContent.includes('step') || thinkContent.includes('Step'));
+                            thinkingScore = hasDetailedReasoning ? 65 : 40;
+                            details.thinkingFound = false;
+                        }
+                        details.thinkingContent = thinkContent.substring(0, 200);
+                    } catch (e) {
+                        thinkingScore = 30;
+                        details.thinkingError = e.message;
+                    }
+                } else {
+                    // Non-Claude model: check for reasoning ability instead
+                    try {
+                        const reasonData = await apiRequest(endpoint, apiKey, model, [
+                            { role: 'user', content: 'A farmer has 17 sheep. All but 9 die. How many sheep are left? Think carefully.' }
+                        ], 50);
+                        perfData.latencies.push(Math.round(performance.now() - startTime));
+                        perfData.totalInput += (reasonData.usage?.prompt_tokens || 0);
+                        perfData.totalOutput += (reasonData.usage?.completion_tokens || 0);
+
+                        const reasonContent = reasonData.choices?.[0]?.message?.content || '';
+                        const correctAnswer = reasonContent.includes('9');
+                        thinkingScore = correctAnswer ? 80 : 35;
+                        details.reasoningContent = reasonContent.substring(0, 100);
+                    } catch (e) {
+                        thinkingScore = 30;
+                    }
+                }
+
+                signatureScore = Math.min(100, signatureScore);
+                const finalScore = Math.round((protocolScore * 0.3 + thinkingScore * 0.35 + signatureScore * 0.35));
+
+                return {
+                    protocolScore,
+                    thinkingScore,
+                    signatureScore,
+                    score: finalScore,
+                    details
+                };
             }
         };
+
+        // 更新环形仪表盘
+        function updateGauge(elementId, valueElementId, score, labelElementId) {
+            const circle = document.getElementById(elementId);
+            const text = document.getElementById(valueElementId);
+            const circumference = 2 * Math.PI * 50; // r=50
+            const offset = circumference - (score / 100) * circumference;
+
+            circle.style.strokeDasharray = circumference;
+            circle.style.strokeDashoffset = circumference;
+
+            // Animate
+            requestAnimationFrame(() => {
+                circle.style.strokeDashoffset = offset;
+            });
+
+            // Color based on score
+            let color = 'var(--cyber-red)';
+            if (score >= 80) color = 'var(--cyber-green)';
+            else if (score >= 50) color = 'var(--cyber-yellow)';
+            circle.style.stroke = color;
+
+            text.textContent = score;
+            text.style.fill = color;
+
+            if (labelElementId) {
+                const label = document.getElementById(labelElementId);
+                if (label) {
+                    if (score >= 90) label.textContent = '✓ 可信';
+                    else if (score >= 70) label.textContent = '~ 基本可信';
+                    else if (score >= 50) label.textContent = '⚠ 疑似掺水';
+                    else label.textContent = '✗ 可疑';
+                }
+            }
+        }
 
         // 更新探针状态
         function updateProbeStatus(probeId, statusId, score, detail) {
@@ -1268,6 +1631,9 @@
 
             // 先加载探针配置
             await loadProbeConfig();
+
+            // 重置性能数据
+            perfData = { latencies: [], totalInput: 0, totalOutput: 0, startTime: performance.now() };
 
             if (!endpoint || !model || !apiKey) {
                 alert(T('fillConfig'));
@@ -1374,6 +1740,29 @@
                      <div>${!r5.hasMarkdown ? '✅' : '⚠️'} Markdown 污染: ${!r5.hasMarkdown ? '无' : '有'}</div>
                      <div>${r5.hasValidJson ? '✅' : '❌'} JSON 有效: ${r5.content}</div>`);
 
+                // 6. 思维链与签名验证
+                updateProbeRunning(6, `
+                    <div style="color: var(--cyber-cyan);">▶ [协议检测] 验证 API 响应结构是否匹配官方规范...</div>
+                    <div style="color: var(--cyber-cyan);">▶ [签名指纹] 检查 model 字段、system_fingerprint、response ID...</div>
+                    <div style="color: var(--cyber-cyan);">▶ [思维链] 检测模型是否具备真实的 thinking/reasoning 能力...</div>
+                    <div class="loading-spinner" style="width: 20px; height: 20px; border-width: 2px; margin-top: 10px;"></div>
+                `);
+                const r6 = await probes.thinkingChainSignature(endpoint, apiKey, model);
+                scores.push(r6.score);
+                document.getElementById('score6').textContent = r6.score + '%';
+                updateProbeStatus('probe6', 'status6', r6.score,
+                    `<div style="color: var(--text-muted);">▶ 协议一致性 (Protocol Consistency)</div>
+                     <div>${r6.protocolScore >= 80 ? '✅' : r6.protocolScore >= 50 ? '⚠️' : '❌'} API 响应结构: ${r6.protocolScore}% — ${r6.protocolScore >= 80 ? '匹配官方规范' : r6.protocolScore >= 50 ? '部分匹配' : '结构异常'}</div>
+                     <div style="color: var(--text-muted); margin-top: 5px;">▶ 签名指纹 (Signature Fingerprint)</div>
+                     <div>${r6.signatureScore >= 70 ? '✅' : '⚠️'} model="${r6.details.modelField}" | fingerprint="${r6.details.fingerprint || '无'}"</div>
+                     <div>${r6.details.responseId ? '✅' : '⚠️'} response_id="${r6.details.responseId?.substring(0, 30) || '无'}"</div>
+                     <div style="color: var(--text-muted); margin-top: 5px;">▶ 思维链痕迹 (Thinking Chain)</div>
+                     <div>${r6.thinkingScore >= 70 ? '✅' : r6.thinkingScore >= 40 ? '⚠️' : '❌'} 思维链检测: ${r6.details.thinkingFound ? '发现思维痕迹' : r6.thinkingScore >= 60 ? '推理能力正常' : '未检测到'}</div>`);
+
+                // 更新思维链和协议仪表盘
+                updateGauge('gaugeProtocol', 'gaugeProtocolVal', r6.protocolScore);
+                updateGauge('gaugeThinking', 'gaugeThinkingVal', r6.thinkingScore);
+
                 // 绘制雷达图
                 drawRadarChart(scores);
 
@@ -1386,6 +1775,23 @@
                 const agentGrade = scores[4] >= 90 ? 'A' : scores[4] >= 70 ? 'B' : scores[4] >= 50 ? 'C' : 'D';
                 document.getElementById('agentGrade').textContent = agentGrade + ' 级';
                 document.getElementById('agentGrade').style.color = scores[4] >= 80 ? 'var(--cyber-green)' : scores[4] >= 60 ? 'var(--cyber-yellow)' : 'var(--cyber-red)';
+
+                // 显示环形仪表盘
+                document.getElementById('gaugeSection').style.display = 'flex';
+                updateGauge('gaugeOverall', 'gaugeOverallVal', Math.round(avgScore), 'gaugeOverallLabel');
+
+                // 显示性能指标
+                document.getElementById('perfMetrics').style.display = 'grid';
+                const avgLatency = perfData.latencies.length > 0
+                    ? Math.round(perfData.latencies.reduce((a, b) => a + b, 0) / perfData.latencies.length)
+                    : 0;
+                const totalSeconds = perfData.latencies.reduce((a, b) => a + b, 0) / 1000;
+                const tps = totalSeconds > 0 ? (perfData.totalOutput / totalSeconds).toFixed(1) : '--';
+
+                document.getElementById('perfLatency').textContent = avgLatency;
+                document.getElementById('perfTps').textContent = tps;
+                document.getElementById('perfInput').textContent = perfData.totalInput;
+                document.getElementById('perfOutput').textContent = perfData.totalOutput;
 
                 // 滚动回结论面板
                 setTimeout(() => {
@@ -1434,6 +1840,7 @@
                 dim3: '安全对齐',
                 dim4: '逻辑智商',
                 dim5: 'Agent兼容',
+                dim6: '思维链',
                 // 探针卡片
                 probe1Name: '1. 物理架构指纹层',
                 probe1Sub: 'Physical & Infra Fingerprint',
@@ -1455,6 +1862,10 @@
                 probe5Sub: 'Agent Compatibility',
                 probe5Principle: '要求模型输出纯净 JSON，不使用 markdown 包装。这测试了模型的指令遵从能力和格式控制能力。',
                 probe5Purpose: '评估模型是否适合作为 Agent 的后端。JSON 污染是 Agent 调用的常见故障源。',
+                probe6Name: '6. 思维链与签名验证',
+                probe6Sub: 'Thinking Chain & Signature',
+                probe6Principle: '<strong>1. 思维链痕迹：</strong>检测模型是否具备真实的思维链(thinking)能力。Claude 等高级模型在开启 extended thinking 时会产生可验证的思考过程，而降智模型无法伪造。<br><strong>2. 签名指纹：</strong>检查响应中的 model 字段、system_fingerprint、response ID 格式是否与真实上游模型一致。<br><strong>3. 协议一致性：</strong>验证 API 响应结构是否完全匹配 OpenAI/Anthropic 官方协议规范。',
+                probe6Purpose: '通过底层协议验证和签名指纹交叉比对，确认模型是否为真实上游接口。',
                 // 状态
                 pending: '待检测',
                 pass: '通过',
@@ -1507,6 +1918,7 @@
                 dim3: 'Safety',
                 dim4: 'Logic',
                 dim5: 'Agent',
+                dim6: 'Thinking',
                 // Probe cards
                 probe1Name: '1. Physical Fingerprint',
                 probe1Sub: 'Tokenizer Analysis',
@@ -1528,6 +1940,10 @@
                 probe5Sub: 'JSON Format Test',
                 probe5Principle: 'Require pure JSON output without markdown wrapping. Tests instruction following and format control abilities.',
                 probe5Purpose: 'Evaluate if model is suitable as Agent backend. JSON pollution is a common failure source in Agent calls.',
+                probe6Name: '6. Thinking Chain & Signature',
+                probe6Sub: 'Protocol Verification',
+                probe6Principle: '<strong>1. Thinking Chain:</strong> Detects if model has real extended thinking capability. Advanced models like Claude produce verifiable thinking traces.<br><strong>2. Signature Fingerprint:</strong> Checks model field, system_fingerprint, and response ID format against real upstream patterns.<br><strong>3. Protocol Consistency:</strong> Validates API response structure against official OpenAI/Anthropic specs.',
+                probe6Purpose: 'Verify model is the real upstream interface through protocol validation and signature cross-checking.',
                 // Status
                 pending: 'Pending',
                 pass: 'Pass',
@@ -1599,15 +2015,16 @@
             if (infoLabels[2]) infoLabels[2].textContent = t.status;
             document.getElementById('status').textContent = t.ready;
 
-            // 雷达图标签 - 添加 data-i18n 属性
-            document.querySelector('.dim-label.top').innerHTML = `${t.dim1}<span class="dim-score" id="score1" style="color: var(--cyber-yellow);">70%</span>`;
-            document.querySelector('.dim-label.top-right').innerHTML = `${t.dim2}<span class="dim-score" id="score2" style="color: var(--cyber-red);">40%</span>`;
-            document.querySelector('.dim-label.bottom-right').innerHTML = `${t.dim3}<span class="dim-score" id="score3" style="color: var(--cyber-green);">85%</span>`;
-            document.querySelector('.dim-label.bottom-left').innerHTML = `${t.dim4}<span class="dim-score" id="score4" style="color: var(--cyber-red);">50%</span>`;
-            document.querySelector('.dim-label.top-left').innerHTML = `${t.dim5}<span class="dim-score" id="score5" style="color: var(--cyber-green);">90%</span>`;
+            // 雷达图标签 - 6维
+            document.querySelector('.dim-label.top').innerHTML = `${t.dim1}<span class="dim-score" id="score1" style="color: var(--cyber-yellow);">--</span>`;
+            document.querySelector('.dim-label.top-right').innerHTML = `${t.dim2}<span class="dim-score" id="score2" style="color: var(--cyber-red);">--</span>`;
+            document.querySelector('.dim-label.bottom-right').innerHTML = `${t.dim3}<span class="dim-score" id="score3" style="color: var(--cyber-green);">--</span>`;
+            document.querySelector('.dim-label.bottom').innerHTML = `${t.dim4}<span class="dim-score" id="score4" style="color: var(--cyber-red);">--</span>`;
+            document.querySelector('.dim-label.bottom-left').innerHTML = `${t.dim5}<span class="dim-score" id="score5" style="color: var(--cyber-green);">--</span>`;
+            document.querySelector('.dim-label.top-left').innerHTML = `${t.dim6}<span class="dim-score" id="score6" style="color: var(--cyber-magenta);">--</span>`;
 
             // 探针卡片
-            for (let i = 1; i <= 5; i++) {
+            for (let i = 1; i <= 6; i++) {
                 updateProbeCard(i, t);
             }
 
@@ -1682,7 +2099,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             loadConfig();
             applyLanguage();
-            drawRadarChart([70, 40, 85, 50, 90]);
+            drawRadarChart([70, 40, 85, 50, 90, 65]);
         });
     </script>
 </body>

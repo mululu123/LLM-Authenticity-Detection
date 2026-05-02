@@ -116,7 +116,7 @@ AI 自动生成评测内容，用于 SEO 引流。
 ---
 
 ## Phase 5: 用户系统 & 冷启动
-**Status:** `pending`
+**Status:** `complete`
 **Priority:** Low
 
 ### 5.1 用户功能
@@ -124,9 +124,12 @@ AI 自动生成评测内容，用于 SEO 引流。
 - [x] 提交新站点（用户建议收录）
 
 ### 5.2 冷启动内容
-- [x] 录入 20 家主流中转站
-- [ ] 为每家生成初始评测
+- [x] 录入 20 家主流中转站 + 2 家实测站点（Code Fox AI、GPTProto）
+- [x] 为每家生成初始评测（62 条 seed reviews）
+- [x] 模型定价数据（54 条 provider_models）
 - [x] 写 3-5 篇 SEO 文章（自动化周报已生成多篇）
+- [x] GPTProto 实测：6 条 detection_results（3 authentic + 3 unavailable）
+- [x] Code Fox AI 录入（9 模型，API key 无余额未深入测试）
 
 ---
 
@@ -161,7 +164,7 @@ Supabase (后端)
 | Phase 2: 首页 | `complete` ✅ |
 | Phase 3: 详情页 | `complete` ✅ |
 | Phase 4: 内容系统 | `complete` ✅ |
-| Phase 5: 用户系统 | `in_progress` |
+| Phase 5: 用户系统 | `complete` ✅ |
 
 ---
 
