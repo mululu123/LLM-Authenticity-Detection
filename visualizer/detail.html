@@ -385,6 +385,10 @@ async function render() {
             </div>
         </div>
     `;
+    } catch (e) {
+        console.error('Render error:', e);
+        showError('页面加载失败: ' + (e.message || '未知错误'));
+    }
 }
 
 function setRating(val) {
@@ -429,12 +433,6 @@ function showError(text) {
             <h3 style="color:var(--text-secondary);margin-bottom:8px;">${text}</h3>
             <a href="/" style="color:var(--primary);font-size:0.9rem;">返回排行榜</a>
         </div>`;
-}
-
-    } catch (e) {
-        console.error('Render error:', e);
-        showError('页面加载失败: ' + (e.message || '未知错误'));
-    }
 }
 
 render();
