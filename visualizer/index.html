@@ -379,6 +379,21 @@
             .toolbar { flex-direction: column; }
             .search-box { min-width: 100%; }
         }
+        /* Submit Modal */
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center; }
+        .modal-overlay.active { display:flex; }
+        .modal { background:var(--white); border-radius:var(--radius); padding:32px; width:90%; max-width:460px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+        .modal h3 { font-size:1.15rem; margin-bottom:4px; }
+        .modal p { font-size:0.85rem; color:var(--text-secondary); margin-bottom:20px; }
+        .modal label { display:block; font-size:0.8rem; font-weight:600; margin-bottom:4px; color:var(--text-secondary); }
+        .modal input, .modal textarea { width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; font-size:0.9rem; margin-bottom:14px; font-family:inherit; }
+        .modal textarea { resize:vertical; min-height:70px; }
+        .modal-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:4px; }
+        .modal-actions button { padding:10px 20px; border-radius:8px; font-size:0.9rem; font-weight:600; cursor:pointer; border:none; }
+        .btn-cancel { background:var(--bg); color:var(--text-secondary); }
+        .btn-submit { background:var(--primary); color:#fff; }
+        .btn-submit:disabled { opacity:0.6; cursor:not-allowed; }
+        .modal-msg { font-size:0.8rem; margin-top:8px; text-align:center; }
     </style>
 </head>
 <body>
@@ -391,7 +406,7 @@
             <a href="/" class="active">排行榜</a>
             <a href="article.html">评测文章</a>
             <a href="detect.html">检测工具</a>
-            <a href="detect.html" class="nav-cta nav-cta">提交站点</a>
+            <a href="#" class="nav-cta" onclick="openSubmitModal();return false;">提交站点</a>
         </div>
     </div>
 </nav>
@@ -502,6 +517,7 @@ async function loadProviders() {
         const { data, error } = await supabaseClient
             .from('providers')
             .select('*')
+            .eq('status', 'active')
             .order('risk_level', { ascending: true });
 
         if (error) throw error;
@@ -635,6 +651,76 @@ function getDemoData() {
 }
 
 init();
+</script>
+
+<!-- Submit Site Modal -->
+<div class="modal-overlay" id="submit-modal">
+    <div class="modal">
+        <h3>推荐收录新站点</h3>
+        <p>发现了一个好用的 API 中转站？告诉我们，审核通过后会加入排行榜。</p>
+        <label>站点名称 *</label>
+        <input type="text" id="sub-name" placeholder="例如：MyAPI" maxlength="100">
+        <label>站点 URL *</label>
+        <input type="url" id="sub-url" placeholder="https://api.example.com" maxlength="500">
+        <label>简介（可选）</label>
+        <textarea id="sub-desc" placeholder="简单描述这个站点的特点..." maxlength="500"></textarea>
+        <div class="modal-actions">
+            <button class="btn-cancel" onclick="closeSubmitModal()">取消</button>
+            <button class="btn-submit" id="sub-btn" onclick="submitSite()">提交</button>
+        </div>
+        <div class="modal-msg" id="sub-msg"></div>
+    </div>
+</div>
+<script>
+function openSubmitModal() {
+    document.getElementById('submit-modal').classList.add('active');
+    document.getElementById('sub-name').focus();
+}
+function closeSubmitModal() {
+    document.getElementById('submit-modal').classList.remove('active');
+    document.getElementById('sub-msg').textContent = '';
+}
+document.getElementById('submit-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeSubmitModal();
+});
+
+async function submitSite() {
+    const name = document.getElementById('sub-name').value.trim();
+    const url = document.getElementById('sub-url').value.trim();
+    const desc = document.getElementById('sub-desc').value.trim();
+    const msg = document.getElementById('sub-msg');
+    const btn = document.getElementById('sub-btn');
+
+    if (!name || !url) { msg.textContent = '请填写站点名称和URL'; msg.style.color = 'var(--danger)'; return; }
+
+    btn.disabled = true;
+    msg.textContent = '提交中...';
+    msg.style.color = 'var(--text-muted)';
+
+    try {
+        const resp = await fetch('/api/submit-site', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, url, description: desc })
+        });
+        const data = await resp.json();
+        if (resp.ok) {
+            msg.style.color = 'var(--success)';
+            msg.textContent = data.message;
+            document.getElementById('sub-name').value = '';
+            document.getElementById('sub-url').value = '';
+            document.getElementById('sub-desc').value = '';
+            setTimeout(closeSubmitModal, 2000);
+        } else {
+            msg.style.color = 'var(--danger)';
+            msg.textContent = data.error || '提交失败';
+        }
+    } catch (e) {
+        msg.style.color = 'var(--danger)';
+        msg.textContent = '网络错误，请稍后重试';
+    }
+    btn.disabled = false;
+}
 </script>
 </body>
 </html>

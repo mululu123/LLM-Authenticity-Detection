@@ -50,3 +50,7 @@ test_report.json
 
 # Node
 node_modules/
+
+# Secrets
+.env
+.supabase/
