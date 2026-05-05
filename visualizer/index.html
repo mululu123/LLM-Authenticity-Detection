@@ -236,7 +236,7 @@
         }
         .table-header {
             display: grid;
-            grid-template-columns: 2fr 80px 100px 80px 80px 120px;
+            grid-template-columns: 2fr 80px 100px 80px 120px;
             padding: 12px 20px;
             background: #f1f5f9;
             font-size: 0.8rem;
@@ -248,7 +248,7 @@
         }
         .provider-row {
             display: grid;
-            grid-template-columns: 2fr 80px 100px 80px 80px 120px;
+            grid-template-columns: 2fr 80px 100px 80px 120px;
             padding: 16px 20px;
             border-bottom: 1px solid var(--border);
             align-items: center;
@@ -333,6 +333,32 @@
             border-color: var(--primary);
             color: var(--primary);
             background: var(--primary-bg);
+        }
+
+        /* Tier badges */
+        .tier-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .tier-rec {
+            background: rgba(0,255,136,0.1);
+            color: #00cc6a;
+            border: 1px solid rgba(0,255,136,0.3);
+        }
+        .tier-neutral {
+            background: rgba(176,176,192,0.1);
+            color: #888;
+            border: 1px solid rgba(176,176,192,0.2);
+        }
+
+        /* Price column */
+        .price-col {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
         }
 
         /* ===== Empty State ===== */
@@ -488,9 +514,8 @@
         <div class="table-header">
             <div>站点</div>
             <div>评级</div>
-            <div>倍率</div>
-            <div>模型</div>
-            <div>评分</div>
+            <div>起步价</div>
+            <div>推荐度</div>
             <div>操作</div>
         </div>
         <div id="provider-list">
@@ -553,7 +578,7 @@ async function loadProviders() {
     try {
         const { data, error } = await supabaseClient
             .from('providers')
-            .select('*')
+            .select('*, provider_models(model_name, price_per_1k_input, price_per_1k_output)')
             .eq('status', 'active')
             .order('risk_level', { ascending: true });
 
@@ -583,15 +608,28 @@ function renderProviders(providers) {
         const ra = riskOrder[a.risk_level] ?? 9;
         const rb = riskOrder[b.risk_level] ?? 9;
         if (ra !== rb) return ra - rb;
+        // Recommended providers first within same risk level
+        const aRec = a.is_verified ? 0 : 1;
+        const bRec = b.is_verified ? 0 : 1;
+        if (aRec !== bRec) return aRec - bRec;
         return (b.avg_rating || 0) - (a.avg_rating || 0);
     });
 
     container.innerHTML = sorted.map(p => {
         const initial = p.name.charAt(0).toUpperCase();
-        const rating = p.avg_rating || 0;
-        const stars = '★'.repeat(Math.round(rating)) + '☆'.repeat(5 - Math.round(rating));
-        const mult = p.avg_multiplier ? `${p.avg_multiplier}x` : '--';
         const url = p.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+        // Find cheapest price from models
+        const models = p.provider_models || [];
+        const pricedModels = models.filter(m => m.price_per_1k_input != null);
+        let priceText = '--';
+        if (pricedModels.length > 0) {
+            const cheapest = pricedModels.reduce((min, m) => m.price_per_1k_input < min ? m.price_per_1k_input : min, Infinity);
+            priceText = `¥${cheapest}/百万`;
+        }
+
+        // Tier badge
+        const tier = p.is_verified ? '<span class="tier-badge tier-rec">推荐</span>' : '<span class="tier-badge tier-neutral">中性</span>';
 
         return `
         <div class="provider-row" onclick="window.location.href='detail.html?id=${p.id}'">
@@ -603,12 +641,8 @@ function renderProviders(providers) {
                 </div>
             </div>
             <div><span class="risk-badge risk-${p.risk_level}">${p.risk_level === 'untested' ? '未测' : p.risk_level}</span></div>
-            <div class="avg-mult">${mult}</div>
-            <div class="model-count">${p.model_count || 0}个</div>
-            <div class="rating">
-                <span class="stars">${stars}</span>
-                <span class="rating-count">(${p.rating_count || 0})</span>
-            </div>
+            <div class="price-col">${priceText}</div>
+            <div>${tier}</div>
             <div><button class="view-btn" onclick="event.stopPropagation();window.location.href='detail.html?id=${p.id}'">查看详情</button></div>
         </div>`;
     }).join('');
@@ -636,8 +670,10 @@ function updateStats(providers) {
     document.getElementById('stat-providers').textContent = providers.length;
     const tested = providers.filter(p => p.risk_level !== 'untested').length;
     document.getElementById('stat-tested').textContent = tested;
-    const totalModels = providers.reduce((sum, p) => sum + (p.model_count || 0), 0);
-    document.getElementById('stat-models').textContent = totalModels;
+    // Count total unique models across all providers
+    const modelSet = new Set();
+    providers.forEach(p => (p.provider_models || []).forEach(m => { if (m.price_per_1k_input != null) modelSet.add(m.model_name); }));
+    document.getElementById('stat-models').textContent = modelSet.size;
 }
 
 // Event listeners
@@ -674,16 +710,9 @@ async function init() {
 
 function getDemoData() {
     return [
-        { name: 'OhMyGPT', url: 'https://api.ohmygpt.com', risk_level: 'untested', avg_multiplier: null, model_count: 42, avg_rating: 4.2, rating_count: 15 },
-        { name: 'API2D', url: 'https://api2d.net', risk_level: 'A', avg_multiplier: 1.5, model_count: 35, avg_rating: 4.5, rating_count: 28 },
-        { name: 'New API', url: 'https://newapi.pro', risk_level: 'B', avg_multiplier: 1.2, model_count: 50, avg_rating: 3.8, rating_count: 12 },
-        { name: 'CloseAI', url: 'https://console.closeai-asia.com', risk_level: 'untested', avg_multiplier: null, model_count: 28, avg_rating: 0, rating_count: 0 },
-        { name: 'CheapGPT', url: 'https://cheapgpt.tw', risk_level: 'C', avg_multiplier: 0.8, model_count: 18, avg_rating: 2.5, rating_count: 8 },
-        { name: 'GPT API', url: 'https://gptapi.us', risk_level: 'B', avg_multiplier: 1.3, model_count: 30, avg_rating: 3.6, rating_count: 10 },
-        { name: 'OneAPI', url: 'https://oneapi.pro', risk_level: 'A', avg_multiplier: 1.6, model_count: 45, avg_rating: 4.0, rating_count: 22 },
-        { name: 'AI Gateway', url: 'https://aigateway.cn', risk_level: 'untested', avg_multiplier: null, model_count: 22, avg_rating: 0, rating_count: 0 },
-        { name: 'Token Hub', url: 'https://tokenhub.com', risk_level: 'D', avg_multiplier: 0.5, model_count: 15, avg_rating: 1.8, rating_count: 5 },
-        { name: 'NinjaAPI', url: 'https://ninjaapi.com', risk_level: 'untested', avg_multiplier: null, model_count: 38, avg_rating: 3.2, rating_count: 3 },
+        { name: 'PackyCode', url: 'https://www.packyapi.com', risk_level: 'B', is_verified: true, provider_models: [{model_name:'claude-sonnet-4-6',price_per_1k_input:2.4,price_per_1k_output:12},{model_name:'claude-opus-4-7',price_per_1k_input:12.5,price_per_1k_output:62.5}] },
+        { name: 'RightCode', url: 'https://www.right.codes', risk_level: 'B', is_verified: true, provider_models: [{model_name:'claude-opus-4-6',price_per_1k_input:0.9,price_per_1k_output:4.5},{model_name:'gpt-5.4',price_per_1k_input:0.5,price_per_1k_output:3}] },
+        { name: 'GPTProto', url: 'https://api.gptproto.com', risk_level: 'B', is_verified: true, provider_models: [{model_name:'claude-sonnet-4-6',price_per_1k_input:4,price_per_1k_output:20}] },
     ];
 }
 

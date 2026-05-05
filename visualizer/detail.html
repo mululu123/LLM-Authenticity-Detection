@@ -308,8 +308,9 @@ async function render() {
                 </div>
                 <div class="header-badges">
                     <span class="badge badge-risk ${provider.risk_level}">风险: ${riskLabel(provider.risk_level)}</span>
-                    <span class="badge badge-models">${provider.model_count || 0} 个模型</span>
-                    ${provider.avg_rating > 0 ? `<span class="badge badge-rating">${renderStars(provider.avg_rating)} ${provider.avg_rating.toFixed(1)}</span>` : ''}
+                    <span class="badge badge-models">${models.length} 个模型</span>
+                    ${provider.is_verified ? '<span class="badge" style="background:rgba(0,255,136,0.1);color:#00cc6a;border:1px solid rgba(0,255,136,0.3)">推荐站点</span>' : ''}
+                    ${provider.notes ? `<span class="badge" style="background:#f8fafc;color:#666">${provider.notes.replace(/^\[.*?\]\s*/, '')}</span>` : ''}
                 </div>
             </div>
         </div>
@@ -321,8 +322,8 @@ async function render() {
                 <div class="stat-label">风险等级</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value">${provider.avg_multiplier ? provider.avg_multiplier + 'x' : '--'}</div>
-                <div class="stat-label">平均倍率</div>
+                <div class="stat-value">${provider.is_verified ? '推荐' : '中性'}</div>
+                <div class="stat-label">推荐度</div>
             </div>
             <div class="stat-card">
                 <div class="stat-value">${provider.model_count || 0}</div>
@@ -338,19 +339,18 @@ async function render() {
         <div class="section">
             <div class="section-header">
                 <span>模型与定价</span>
-                ${provider.last_detected_at ? `<span style="font-size:0.75rem;color:var(--text-muted)">最近检测: ${formatDate(provider.last_detected_at)}</span>` : ''}
+                <span style="font-size:0.75rem;color:var(--text-muted)">价格单位: 人民币/百万Token</span>
             </div>
             <div class="section-body">
                 ${models.length > 0 ? `
                     <table class="models-table">
-                        <thead><tr><th>模型</th><th>倍率</th><th>输入价格</th><th>输出价格</th><th>状态</th></tr></thead>
+                        <thead><tr><th>模型</th><th>输入价格</th><th>输出价格</th><th>状态</th></tr></thead>
                         <tbody>
                             ${models.map(m => `
                                 <tr>
                                     <td class="model-name">${m.model_name}</td>
-                                    <td class="${multClass(m.multiplier)}">${m.multiplier ? m.multiplier + 'x' : '--'}</td>
-                                    <td>${m.price_per_1k_input ? '$' + m.price_per_1k_input.toFixed(4) : '--'}</td>
-                                    <td>${m.price_per_1k_output ? '$' + m.price_per_1k_output.toFixed(4) : '--'}</td>
+                                    <td>${m.price_per_1k_input != null ? '¥' + m.price_per_1k_input : '--'}</td>
+                                    <td>${m.price_per_1k_output != null ? '¥' + m.price_per_1k_output : '--'}</td>
                                     <td>${m.is_available ? '<span style="color:var(--success)">可用</span>' : '<span style="color:var(--text-muted)">不可用</span>'}</td>
                                 </tr>
                             `).join('')}
