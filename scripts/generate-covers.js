@@ -16,7 +16,7 @@ const FORCE = process.argv.includes('--regenerate');
 
 const fs = require('fs');
 const path = require('path');
-const OUT_DIR = path.join(__dirname, '..', 'public', 'images', 'articles');
+const OUT_DIR = path.join(__dirname, '..', 'visualizer', 'images', 'articles');
 
 if (!GEMINI_KEY) {
   console.error('Error: GEMINI_API_KEY env var required');
