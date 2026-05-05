@@ -1,0 +1,30 @@
+name: Sync Provider Data
+
+on:
+  schedule:
+    # Run daily at 6:00 UTC (14:00 Beijing time)
+    - cron: '0 6 * * *'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Fetch latest README
+        run: |
+          curl -sL "https://raw.githubusercontent.com/zzsting88/relayAPI/main/README.md" -o /tmp/hvoy-readme.md
+          echo "README size: $(wc -c < /tmp/hvoy-readme.md) bytes"
+
+      - name: Dry run to verify
+        run: node scripts/sync-providers.js --dry-run
+
+      - name: Sync to Supabase
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/sync-providers.js
