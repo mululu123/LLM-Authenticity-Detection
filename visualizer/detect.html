@@ -193,6 +193,13 @@
 
         .control-group { flex: 1; min-width: 180px; }
 
+        .control-group .hint {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            min-height: 16px;
+        }
+
         .control-label {
             display: block;
             font-size: 0.75rem;
@@ -784,6 +791,7 @@
                 <div class="control-group">
                     <label class="control-label" data-i18n="endpoint">API 端点</label>
                     <input type="text" class="control-input" id="endpoint" value="https://api.example.com/v1/chat/completions" placeholder="https://api.example.com/v1/chat/completions">
+                    <div class="hint"></div>
                 </div>
                 <div class="control-group" style="flex: 0.4; min-width: 120px;">
                     <label class="control-label" data-i18n="model">模型名称</label>
@@ -806,16 +814,20 @@
                         <option value="qwen-max">
                         <option value="glm-4">
                     </datalist>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">支持模糊输入，如 gpt5.5 → gpt-5.5</div>
+                    <div class="hint">支持模糊输入，如 gpt5.5 → gpt-5.5</div>
                 </div>
                 <div class="control-group" style="flex: 0.6; min-width: 180px;">
                     <label class="control-label" data-i18n="apiKey">API Key</label>
                     <input type="password" class="control-input" id="apiKey" placeholder="sk-...">
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">🔒 仅本地使用，不会上传或存储</div>
+                    <div class="hint">🔒 仅本地使用，不会上传或存储</div>
                 </div>
-                <button class="btn-primary" id="startBtn" onclick="startInspection()">
-                    开始检测
-                </button>
+                <div class="control-group" style="flex: 0; min-width: auto;">
+                    <label class="control-label">&nbsp;</label>
+                    <button class="btn-primary" id="startBtn" onclick="startInspection()">
+                        开始检测
+                    </button>
+                    <div class="hint"></div>
+                </div>
             </div>
         </div>
 
